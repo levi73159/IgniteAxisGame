@@ -1,7 +1,8 @@
 const std = @import("std");
 
 pub const Vec2 = struct {
-    x: f32, y: f32,
+    x: f32,
+    y: f32,
 
     pub fn init(x: f32, y: f32) Vec2 {
         return .{ .x = x, .y = y };
@@ -23,7 +24,9 @@ pub const Vec2 = struct {
 };
 
 pub const Vec3 = struct {
-    x: f32, y: f32, z: f32,
+    x: f32,
+    y: f32,
+    z: f32,
 
     pub fn init(x: f32, y: f32, z: f32) Vec3 {
         return .{ .x = x, .y = y, .z = z };
@@ -36,7 +39,13 @@ pub const Vec3 = struct {
         return dx * dx + dy * dy + dz * dz;
     }
 
+    pub fn distance(a: Vec3, b: Vec3) f32 {
+        return @sqrt(distanceSquare(a, b));
+    }
+
     pub fn cast2Vec2(vec: Vec3) Vec2 {
         return .{ .x = vec.x, .y = vec.y };
     }
 };
+
+pub const Vec4 = struct { x: f32, y: f32, z: f32, w: f32 };

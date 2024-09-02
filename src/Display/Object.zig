@@ -10,6 +10,7 @@ pub const Attrib = struct {
 pub const Layout = struct {
     attribs: []const Attrib,
     size: usize,
+    vao: gl.VertexArray,
 
     pub fn init(attribs: []const Attrib) Layout {
         var size: usize = 0;
@@ -17,11 +18,19 @@ pub const Layout = struct {
             const type_size = getSize(attrib.atype);
             size += attrib.size * type_size;
         }
-        return .{ .attribs = attribs, .size = size };
+        return .{ .attribs = attribs, .size = size, .vao = gl.VertexArray.gen() };
     }
 
-    pub fn set(layout: Layout) void {
+    /// links the `array_buffer` to the layout
+    pub fn link(layout: Layout, comptime T: type, array_buffer: gl.Buffer, vertices: []align(1)const T) void {
         var data_size: usize = 0;
+        layout.vao.bind();
+        defer gl.VertexArray.bind(.invalid);
+
+        array_buffer.bind(.array_buffer);
+        defer gl.Buffer.bind(.invalid, .array_buffer);
+        array_buffer.data(T, vertices, .static_draw);
+
         for (layout.attribs, 0..) |attrib, index| {
             gl.vertexAttribPointer(@intCast(index), attrib.size, attrib.atype, attrib.normilized, layout.size, data_size);
             gl.enableVertexAttribArray(@intCast(index));
@@ -29,20 +38,31 @@ pub const Layout = struct {
             data_size += attrib.size * getSize(attrib.atype);
         }
     }
+
+    pub fn delete(layout: Layout) void {
+        layout.vao.delete();
+    }
+
+    pub fn bind(layout: Layout) void {
+        layout.vao.bind();
+    }
+
+    pub fn unbind() void {
+        gl.VertexArray.bind(.invalid);
+    }
 };
 
 const Allocator = std.mem.Allocator;
 const Self = @This();
 
-vao: gl.VertexArray,
 vbo: gl.Buffer,
 ibo: gl.Buffer,
 vert_count: usize,
+layout: Layout,
 shader: ?*const Shader, // if null we will have to use drawShader to render obj instead of draw
 
 fn bindAll(self: Self) void {
-    self.vao.bind();
-    self.vbo.bind(gl.BufferTarget.array_buffer);
+    self.layout.bind();
     self.ibo.bind(gl.BufferTarget.element_array_buffer);
 }
 
@@ -65,39 +85,24 @@ fn getSize(t: gl.Type) usize {
     };
 }
 
-pub fn init(shader: ?*const Shader, vertices: []align(1) const f32, indices: []align(1) const u32, layout: ?Layout) Self {
-    const vao = gl.VertexArray.gen();
+pub fn init(shader: ?*const Shader, vertices: []align(1) const f32, indices: []align(1) const u32, layout: Layout) Self {
     const vbo = gl.Buffer.gen();
     const ibo = gl.Buffer.gen();
 
-    vao.bind();
-    defer gl.VertexArray.bind(.invalid);
-
-    vbo.bind(.array_buffer);
-    defer gl.Buffer.bind(.invalid, .array_buffer);
-
-    vbo.data(f32, vertices, .static_draw);
-    if (layout) |l| l.set();
+    layout.link(f32, vbo, vertices);
 
     ibo.bind(gl.BufferTarget.element_array_buffer);
+    defer gl.Buffer.bind(.invalid, .element_array_buffer);
     ibo.data(u32, indices, .static_draw);
     // defer gl.Buffer.bind(.invalid, .element_array_buffer); // unbinding
 
-    return .{ .vao = vao, .vbo = vbo, .ibo = ibo, .vert_count = indices.len, .shader = shader };
+    return .{ .vbo = vbo, .ibo = ibo, .vert_count = indices.len, .shader = shader, .layout = layout };
 }
 
 pub fn deinit(self: Self) void {
-    self.vao.delete();
     self.vbo.delete();
     self.ibo.delete();
-}
-
-pub fn setLayout(self: Self, layout: Layout) void {
-    self.vao.bind();
-    self.vbo.bind(.array_buffer);
-    defer unbind();
-
-    layout.set();    
+    self.layout.delete();
 }
 
 pub fn draw(self: Self) void {
