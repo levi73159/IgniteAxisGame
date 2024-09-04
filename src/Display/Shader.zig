@@ -85,7 +85,16 @@ pub fn deinit(self: Self) void {
 fn getUniform(self: Self, name: [:0]const u8) ?u32 {
     self.use();
     
-    const location = gl.getUniformLocation(self.program, name);
+    const real_name = blk: {
+        var buffer: [255]u8 = undefined;
+        const s: [:0]const u8 = std.fmt.bufPrintZ(&buffer, "u_{s}", .{name}) catch |err| {
+            std.log.err("Failed to get unifrom real name because of BufPrintError: {any}", .{err});
+            return null;
+        };
+        break :blk s;
+    };
+
+    const location = gl.getUniformLocation(self.program, real_name);
     if (location == null) {
         std.log.warn("Can't find unfiorm {s}", .{name});
     }
