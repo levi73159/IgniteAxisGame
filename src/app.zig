@@ -2,6 +2,7 @@ const std = @import("std");
 const glfw = @import("glfw");
 const gl = @import("gl");
 const Vec2 = @import("vector.zig").Vec2;
+const Shader = @import("Display/Shader.zig");
 
 pub const Window = @import("Display/Window.zig");
 pub const Color = @import("Display/Color.zig");
@@ -28,6 +29,7 @@ pub fn init() InitError!void {
         return error.GLFWInit;
     }
     app_gpa = std.heap.GeneralPurposeAllocator(.{}){};
+
     been_init = true;
 }
 
@@ -41,7 +43,7 @@ pub fn deinit() void {
     glfw.terminate();
 }
 
-pub fn getAllocator() std.mem.Allocator {
+pub fn allocator() std.mem.Allocator {
     if (app_gpa.detectLeaks())
         log.warn("Memory Leak Detected!", .{});
     return app_gpa.allocator();
@@ -51,17 +53,19 @@ pub fn setVsync(vsync: bool) void {
     glfw.swapInterval(if (vsync) 1 else 0);
 }
 
-pub fn createWindow(title: [*:0]const u8, size: Vec2) !*Window {
+pub fn createWindow(title: [*:0]const u8, size: Vec2, default_shader: ?[]const u8) !*Window {
     if (!been_init)
         try init();
 
-    primary_window = try Window.create(getAllocator(), title, size);
+    primary_window = try Window.create(allocator(), title, size);
     glfw.makeContextCurrent(primary_window.?.contex);
 
     gl.loadExtensions(opengl_proc, glGetProcAddress) catch return error.EntryPointNotFound;
     log.info("Window {s}, Version: {s}\n", .{ title, gl.getString(.version) orelse "null" });
 
     gl.viewport(0, 0, @intFromFloat(size.x), @intFromFloat(size.y));
+
+    primary_window.?.setDefaultShader(default_shader orelse "default");
 
     if (app_gpa.detectLeaks())
         log.warn("Memory Leak Detected!", .{});

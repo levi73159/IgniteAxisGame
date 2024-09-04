@@ -84,12 +84,20 @@ pub fn deinit(self: Self) void {
 
 fn getUniform(self: Self, name: [:0]const u8) ?u32 {
     self.use();
+    
     const location = gl.getUniformLocation(self.program, name);
     if (location == null) {
         std.log.warn("Can't find unfiorm {s}", .{name});
     }
     return location;
 }
+
+pub const UniformType = union(enum) {
+    color: Color,
+    vec2: vector.Vec2,
+    vec3: vector.Vec3,
+    vec4: vector.Vec4,
+};
 
 pub fn setUniformColor(self: Self, name: [:0]const u8, color: Color) void {
     const uniform = self.getUniform(name) orelse return;
