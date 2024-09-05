@@ -118,6 +118,7 @@ fn getSize(t: gl.Type) usize {
     };
 }
 
+/// initlize and object and returns said object
 pub fn init(shader: ?Shader, vertices: []align(1) const f32, indices: []align(1) const u32, layout: Layout) Self {
     const vbo = gl.Buffer.gen();
     const ibo = gl.Buffer.gen();
@@ -139,6 +140,16 @@ pub fn init(shader: ?Shader, vertices: []align(1) const f32, indices: []align(1)
     };
 }
 
+/// Creates an object on the heap, adds it to the renderer
+pub fn create(renderer: *app.Window.Renderer, shader: ?Shader, vertices: []align(1) const f32, indices: []align(1) const u32, layout: Layout) !*Self {
+    const allocator = renderer.allocator; // use the renderer allocator to create object
+    const object_ptr = try allocator.create(Self);
+
+    object_ptr.* = init(shader, vertices, indices, layout);
+    try renderer.addObject(object_ptr);
+    return object_ptr;
+}
+
 pub fn deinit(self: *Self) void {
     self.vbo.delete();
     self.ibo.delete();
@@ -153,25 +164,20 @@ pub fn setUniform(self: *Self, name: [:0]const u8, value: Shader.UniformType) vo
 }
 
 /// NOTE: DOES NOT CALL `shader.use();` must call before use
-fn setShaderUniforms(self: Self, shader: *const Shader) void {
+fn setShaderUniforms(self: Self, shader: *Shader) void {
     var it = self.uniforms.iterator();
     while (it.next()) |uniform_entry| {
-        switch (uniform_entry.value_ptr.*) {
-            .color => shader.setUniformColor(uniform_entry.key_ptr.*, uniform_entry.value_ptr.color),
-            .vec2 => shader.setUniformVec2(uniform_entry.key_ptr.*, uniform_entry.value_ptr.vec2),
-            .vec3 => shader.setUniformVec3(uniform_entry.key_ptr.*, uniform_entry.value_ptr.vec3),
-            .vec4 => shader.setUnifromVec4(uniform_entry.key_ptr.*, uniform_entry.value_ptr.vec4),
-        }
+        shader.setUnifrom(uniform_entry.key_ptr.*, uniform_entry.value_ptr.*);
     }
 }
 
-pub fn draw(self: Self) void {
+pub fn draw(self: *Self) void {
     self.layout.set(self.vbo);
     self.bindAll();
 
     if (self.shader) |s| {
         s.use();
-        self.setShaderUniforms(&s);
+        self.setShaderUniforms(&(self.shader.?));
     } else {
         std.log.warn("Shader is not define, use drawShader instead!", .{});
     }
@@ -180,7 +186,7 @@ pub fn draw(self: Self) void {
     unbind();
 }
 
-pub fn drawShader(self: Self, shader: *const Shader) void {
+pub fn drawShader(self: Self, shader: *Shader) void {
     self.layout.set(self.vbo);
     self.bindAll();
 

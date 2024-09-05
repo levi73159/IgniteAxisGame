@@ -42,7 +42,7 @@ pub fn setDefaultShader(self: *Self, name: []const u8) void {
     self._default_shader = Shader.init(app.allocator(), name);
 }
 
-pub fn close(self: *const Self) void {
+pub fn close(self: *Self) void {
     self.contex.setShouldClose(true);
     self.contex.destroy();
     self.renderer.deinit();
@@ -68,11 +68,11 @@ pub fn getKeyRelease(self: Self, key: Key) bool {
     return action == .release;
 }
 
-pub fn getDefaultShader(self: *const Self) *const Shader {
+pub fn getDefaultShader(self: *Self) *Shader {
     return &self._default_shader;
 }
 
 // Calls `Renderer.render()`
-pub fn render(self: *const Self) void {
+pub fn render(self: *Self) void {
     self.renderer.render(self, self.getDefaultShader());
 }

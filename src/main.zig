@@ -5,6 +5,7 @@ const app = @import("app.zig");
 
 const Object = @import("Display/Object.zig");
 const Shader = @import("Display/Shader.zig");
+const Texture = @import("Display/Texture.zig");
 const vector = @import("vector.zig");
 
 const Allocator = std.mem.Allocator;
@@ -32,42 +33,65 @@ pub fn main() !void {
         std.process.exit(1);
     };
 
+    window.background_color = app.Color.white;
+
     app.setVsync(true);
 
     // zig fmt: off
     const positions = [_]f32{
-        -0.5, -0.25, 1, 0, 0,// 0
-        0.5, -0.25, 1, 0, 0, // 1
-        0.5, 0.15, 1, 0, 0,  // 2
-        -0.5, 0.15, 1, 0, 0, // 3
-        0.3, 0.5, 0, 1, 0,  // 4
-        -0.3, 0.5, 0, 1, 0
+        -0.5, -0.5, 0, 1,// 0
+        0.5, -0.5, 1, 1, // 1
+        0.5, 0.5, 1, 0,  // 2
+        -0.5, 0.5, 0, 0 // 3
     };
 
     // const positions2 = [_]f32{ 
-    //     -0.5, 0.15, 
-    //     0.5, 0.15,
-    //     0.2, 0.35, 
-    //     -0.2, 0.45 };
+    //     -0.5, 0.15, 0, 1, 0, 
+    //     0.5, 0.15, 0, 1, 1,
+    //     0.2, 0.35, 0, 1, 0, 
+    //     -0.2, 0.45, 0, 1, 1
+    // };
     // zig fmt: on
-    // _ = positions2;
+    //_ = positions2;
 
-    const indices = [_]u32{ 0, 1, 2, 2, 3, 0, 2, 4, 5, 5, 3, 2 };
+    const indices = [_]u32{ 0, 1, 2, 2, 3, 0  };
 
-    const layout = Object.Layout.init(&[2]Object.Attrib{.{ .size = 2 }, .{ .size = 3 }});
+    const layout = Object.Layout.init(&[2]Object.Attrib{ .{ .size = 2 }, .{ .size = 2 } });
 
-    var rect = Object.init(null, &positions, &indices, layout);
+    // var rect = Object.init(null, &positions, &indices, layout);
+    // defer rect.deinit();
+    const rect = try Object.create(&window.renderer, null, &positions, &indices, layout);
     defer rect.deinit();
 
-    // var rect2 = Object.init(null, &positions2, &indices, layout);
-    // defer rect2.deinit();
+    const text1 = try Texture.init(app.allocator(), "res/GMOS.png", 1);
+    text1.bind();
 
-    rect.setUniform("Color", .{ .color = app.Color.colorRGB(0, 0, 255) });
+    const text2 = try Texture.init(app.allocator(), "res/GMOS Back.png", 2);
+    text2.bind();
 
-    try window.renderer.addObject(&rect);
-    // try window.renderer.addObject(&rect2);
+    const text3 = try Texture.init(app.allocator(), "res/Logo.png", 3);
+    text3.bind();
+
+    const text4 = try Texture.init(app.allocator(), "res/LogoStraight.png", 4);
+    text4.bind();
+
+    rect.setUniform("Color", .{ .color = app.Color.colorRGB(255, 255, 255) });
+    rect.setUniform("Texture", .{ .texture = text1 });
+
+    // TODO: FIX TEXTURING SYSTEM
+    // currently it only doing 3 instead of 4, see by running app
+
     while (!window.shouldClose()) {
-        // rect2.setUniform("u_Color", .{ .color = color });
+        if (window.getKeyPress(.one)) {
+            rect.setUniform("Texture", .{ .texture = text1 });
+        } else if (window.getKeyPress(.two)) {
+            rect.setUniform("Texture", .{ .texture = text2 });
+        } else if (window.getKeyPress(.three)) {
+            rect.setUniform("Texture", . {.texture = text3 });
+        } else if (window.getKeyPress(.four)) {
+            rect.setUniform("Texture", . {.texture = text4 });
+        }
+
         window.render();
     }
 }

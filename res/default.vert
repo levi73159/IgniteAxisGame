@@ -1,11 +1,11 @@
 #version 330 core
 
 layout(location = 0) in vec4 pos;
-layout(location = 1) in vec4 color;
+layout(location = 1) in vec2 texCoord;
 
-out vec4 vertColor;
+out vec2 v_TexCoord;
 
 void main() {
+    v_TexCoord = texCoord;
     gl_Position = pos;
-    vertColor = color;
 }

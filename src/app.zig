@@ -11,6 +11,7 @@ pub const Key = glfw.Key;
 const log = std.log.scoped(.app);
 
 var been_init = false;
+var opengl_init = false;
 var primary_window: ?Window = null;
 const opengl_proc: glfw.GLProc = undefined;
 
@@ -33,9 +34,17 @@ pub fn init() InitError!void {
     been_init = true;
 }
 
+fn initOpenGL() !void {
+    if (opengl_init) return error.AlreadyInit;
+
+    gl.loadExtensions(opengl_proc, glGetProcAddress) catch return error.EntryPointNotFound;
+
+    gl.blendFunc(.src_alpha, .one_minus_src_alpha);
+}
+
 pub fn deinit() void {
-    if (primary_window) |win| {
-        win.close();
+    if (primary_window != null) {
+        primary_window.?.close();
     }
 
     const denit_status = app_gpa.deinit();
@@ -44,8 +53,6 @@ pub fn deinit() void {
 }
 
 pub fn allocator() std.mem.Allocator {
-    if (app_gpa.detectLeaks())
-        log.warn("Memory Leak Detected!", .{});
     return app_gpa.allocator();
 }
 
@@ -60,15 +67,14 @@ pub fn createWindow(title: [*:0]const u8, size: Vec2, default_shader: ?[]const u
     primary_window = try Window.create(allocator(), title, size);
     glfw.makeContextCurrent(primary_window.?.contex);
 
-    gl.loadExtensions(opengl_proc, glGetProcAddress) catch return error.EntryPointNotFound;
+    if (!opengl_init)
+        try initOpenGL();
     log.info("Window {s}, Version: {s}\n", .{ title, gl.getString(.version) orelse "null" });
 
     gl.viewport(0, 0, @intFromFloat(size.x), @intFromFloat(size.y));
 
     primary_window.?.setDefaultShader(default_shader orelse "default");
 
-    if (app_gpa.detectLeaks())
-        log.warn("Memory Leak Detected!", .{});
     return &primary_window.?;
 }
 
