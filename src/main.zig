@@ -37,18 +37,9 @@ pub fn main() !void {
 
     app.setVsync(true);
 
-    // const positions2 = [_]f32{
-    //     -0.5, 0.15, 0, 1, 0,
-    //     0.5, 0.15, 0, 1, 1,
-    //     0.2, 0.35, 0, 1, 0,
-    //     -0.2, 0.45, 0, 1, 1
-    // };
-    // zig fmt: on
-    //_ = positions2;
-
     const mainCam = Camera.initDefault();
-
-    const texture = try Texture.init(app.allocator(), "res/GMOS Back.png", 0);
+    
+    const texture = try Texture.init(app.allocator(), "res/white.png", 0);
     texture.bind();
 
     const rect = try GameObject.initSquare(&window.renderer, za.Vec2.new(0, 100), za.Vec2.new(100, 100), texture, null);
