@@ -1,7 +1,11 @@
 const std = @import("std");
 const gl = @import("gl");
-const Shader = @import("Shader.zig");
 const app = @import("../app.zig");
+const za = @import("zalgebra");
+
+const Shader = @import("Shader.zig");
+const Camera = @import("Camera.zig");
+const Window = @import("Window.zig");
 
 pub const Attrib = struct {
     size: u32,
@@ -86,6 +90,10 @@ const UnifromMapContext = struct {
 
 const UniformMap = std.ArrayHashMap([:0]const u8, Shader.UniformType, UnifromMapContext, true);
 
+postion: za.Vec2 = za.Vec2.zero(),
+scale: za.Vec2 = za.Vec2.one(),
+roation: f32 = 0.0,
+
 vbo: gl.Buffer,
 ibo: gl.Buffer,
 vert_count: usize,
@@ -93,6 +101,9 @@ layout: Layout,
 shader: ?Shader, // if null we will have to use drawShader to render obj instead of draw
 
 uniforms: UniformMap,
+
+id: usize,
+
 
 fn bindAll(self: Self) void {
     self.layout.bind();
@@ -128,7 +139,6 @@ pub fn init(shader: ?Shader, vertices: []align(1) const f32, indices: []align(1)
     ibo.bind(gl.BufferTarget.element_array_buffer);
     defer gl.Buffer.bind(.invalid, .element_array_buffer);
     ibo.data(u32, indices, .static_draw);
-    // defer gl.Buffer.bind(.invalid, .element_array_buffer); // unbinding
 
     return Self{
         .vbo = vbo,
@@ -137,6 +147,7 @@ pub fn init(shader: ?Shader, vertices: []align(1) const f32, indices: []align(1)
         .shader = shader,
         .layout = layout,
         .uniforms = UniformMap.init(app.allocator()),
+        .id = 0,
     };
 }
 
@@ -171,6 +182,14 @@ fn setShaderUniforms(self: Self, shader: *Shader) void {
     }
 }
 
+pub fn getTransform(self: *const Self) za.Mat4 {
+    return za.Mat4.identity()
+        .scale(self.scale.toVec3(0))
+        .translate(self.postion.toVec3(0))
+        .rotate(self.roation, za.Vec3.new(1, 0, 0));
+}
+
+/// NOTICE DOES NOT CHANGE ANYTHING Except updating already existing 
 pub fn draw(self: *Self) void {
     self.layout.set(self.vbo);
     self.bindAll();

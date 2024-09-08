@@ -1,9 +1,11 @@
-const Allocator = @import("std").mem.Allocator;
+const za = @import("zalgebra");
 const glfw = @import("glfw");
-const Vec2 = @import("../vector.zig").Vec2;
-const Color = @import("Color.zig");
+
+const Allocator = @import("std").mem.Allocator;
 const Key = glfw.Key;
+const Color = @import("Color.zig");
 const Shader = @import("Shader.zig");
+const Camera = @import("Camera.zig");
 
 const app = @import("../app.zig");
 
@@ -20,8 +22,8 @@ _default_shader: Shader,
 /// return `error.WindowCreate` if fail
 ///
 /// If `default_shader` is null will use the 'default' by default, must be called by app
-pub fn create(allocator: Allocator, title: [*:0]const u8, size: Vec2) !Self {
-    const window: glfw.Window = glfw.Window.create(@intFromFloat(size.x), @intFromFloat(size.y), title, null, null, .{
+pub fn create(allocator: Allocator, title: [*:0]const u8, size: app.Size) !Self {
+    const window: glfw.Window = glfw.Window.create(size.width, size.height, title, null, null, .{
         .opengl_profile = .opengl_core_profile,
         .context_version_major = 3,
         .context_version_minor = 3,
@@ -38,6 +40,11 @@ pub fn create(allocator: Allocator, title: [*:0]const u8, size: Vec2) !Self {
     // zig fmt: on
 }
 
+pub fn getProjectionMatrix(self: Self) za.Mat4 {
+    const window_size = self.getSize();
+    return za.orthographic(0, @floatFromInt(window_size.width), 0, @floatFromInt(window_size.height), -1, 1);
+}
+
 pub fn setDefaultShader(self: *Self, name: []const u8) void {
     self._default_shader = Shader.init(app.allocator(), name);
 }
@@ -49,9 +56,8 @@ pub fn close(self: *Self) void {
     self._default_shader.deinit();
 }
 
-pub fn getSize(self: Self) Vec2 {
-    const size = self.contex.getSize();
-    return .{ .x = @floatFromInt(size.width), .y = @floatFromInt(size.height) };
+pub fn getSize(self: Self) app.Size {
+    return self.contex.getSize();
 }
 
 pub fn shouldClose(self: Self) bool {
@@ -72,7 +78,13 @@ pub fn getDefaultShader(self: *Self) *Shader {
     return &self._default_shader;
 }
 
+// Update window
+pub fn update(self: *Self) void {
+    const size = self.getSize();
+    app.setViewport(size.width, size.height);
+}
+
 // Calls `Renderer.render()`
-pub fn render(self: *Self) void {
-    self.renderer.render(self, self.getDefaultShader());
+pub fn render(self: *Self, cam: Camera) void {
+    self.renderer.render(cam, self, self.getDefaultShader());
 }

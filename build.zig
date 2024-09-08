@@ -4,6 +4,7 @@ const std = @import("std");
 // declaratively construct a build graph that will be executed by an external
 // runner.
 pub fn build(b: *std.Build) void {
+    // zig fmt: off
     // Standard target options allows the person running `zig build` to choose
     // what target to build for. Here we do not override the defaults, which
     // means any target is allowed, and the default is native. Other options
@@ -21,6 +22,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    
 
     const zgl = b.dependency("zgl", .{
         .target = target,
@@ -40,6 +42,12 @@ pub fn build(b: *std.Build) void {
     });
     exe.root_module.addImport("zigimg", zigimg.module("zigimg"));
 
+    const zalgebra = b.dependency("zalgebra", .{
+        .target = target,
+        .optimize = optimize
+    });
+    exe.root_module.addImport("zalgebra", zalgebra.module("zalgebra"));
+    
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
     // step when running `zig build`).

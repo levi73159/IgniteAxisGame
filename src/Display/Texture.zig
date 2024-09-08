@@ -16,6 +16,7 @@ pub fn init(allocator: std.mem.Allocator, path: []const u8, slot: u32) !Self {
     defer image.deinit();
 
     const texture_id = gl.genTexture();
+    gl.activeTexture(gl.TextureUnit.unit(slot));
     gl.bindTexture(texture_id, .@"2d");
 
     gl.textureParameter(texture_id, .min_filter, .linear);
@@ -38,7 +39,7 @@ pub fn deinit(self: Self) void {
 
 pub fn bind(self: Self) void {
     gl.activeTexture(gl.TextureUnit.unit(self.slot));
-    gl.bindTexture(@enumFromInt(self.renderer_id), .@"2d"); 
+    gl.bindTexture(@enumFromInt(self.renderer_id), .@"2d");
 }
 
 pub fn unbind() void {

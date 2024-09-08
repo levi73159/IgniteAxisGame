@@ -5,7 +5,7 @@ const Allocator = std.mem.Allocator;
 const Color = @import("Color.zig");
 const Texture = @import("Texture.zig");
 const Self = @This();
-const vector = @import("../vector.zig");
+const math = @import("zalgebra");
 
 program: gl.Program,
 uniform_cache: std.StringHashMap(u32),
@@ -117,14 +117,7 @@ fn getUniform(self: *Self, name: [:0]const u8) ?u32 {
     return location;
 }
 
-pub const UniformType = union(enum) {
-    int: i32,
-    color: Color,
-    vec2: vector.Vec2,
-    vec3: vector.Vec3,
-    vec4: vector.Vec4,
-    texture: Texture
-};
+pub const UniformType = union(enum) { int: i32, color: Color, vec2: math.Vec2, vec3: math.Vec3, vec4: math.Vec4, mat4: math.Mat4, texture: Texture };
 
 pub fn setUnifrom(self: *Self, name: [:0]const u8, unifrom: UniformType) void {
     switch (unifrom) {
@@ -133,7 +126,8 @@ pub fn setUnifrom(self: *Self, name: [:0]const u8, unifrom: UniformType) void {
         .vec3 => self.setUniformVec3(name, unifrom.vec3),
         .vec4 => self.setUnifromVec4(name, unifrom.vec4),
         .int => self.setUnifromInt(name, unifrom.int),
-        .texture => self.setUnifromInt(name, @intCast(unifrom.texture.slot))
+        .texture => self.setUnifromInt(name, @intCast(unifrom.texture.slot)),
+        .mat4 => self.setUniformMat4(name, unifrom.mat4),
     }
 }
 
@@ -144,22 +138,31 @@ pub fn setUniformColor(self: *Self, name: [:0]const u8, color: Color) void {
     gl.uniform4f(uniform, real_color.r, real_color.g, real_color.b, real_color.a);
 }
 
-pub fn setUnifromVec4(self: *Self, name: [:0]const u8, vec: vector.Vec4) void {
+pub fn setUnifromVec4(self: *Self, name: [:0]const u8, vec: math.Vec4) void {
     const uniform = self.getUniform(name) orelse return;
-    gl.uniform4f(uniform, vec.x, vec.y, vec.z, vec.z);
+    gl.uniform4f(uniform, vec.x(), vec.y(), vec.z(), vec.w());
 }
 
-pub fn setUniformVec3(self: *Self, name: [:0]const u8, vec: vector.Vec3) void {
+pub fn setUniformVec3(self: *Self, name: [:0]const u8, vec: math.Vec3) void {
     const uniform = self.getUniform(name) orelse return;
-    gl.uniform3f(uniform, vec.x, vec.y, vec.z);
+    gl.uniform3f(uniform, vec.x(), vec.y(), vec.z());
 }
 
-pub fn setUniformVec2(self: *Self, name: [:0]const u8, vec: vector.Vec2) void {
+pub fn setUniformVec2(self: *Self, name: [:0]const u8, vec: math.Vec2) void {
     const uniform = self.getUniform(name) orelse return;
-    gl.uniform2f(uniform, vec.x, vec.y);
+    gl.uniform2f(uniform, vec.x(), vec.y());
 }
 
 pub fn setUnifromInt(self: *Self, name: [:0]const u8, int: i32) void {
     const unifrom = self.getUniform(name) orelse return;
     gl.uniform1i(unifrom, int);
+}
+
+pub fn setUniformMat4(self: *Self, name: [:0]const u8, matrix: math.Mat4) void {
+    const unifrom = self.getUniform(name) orelse return;
+    gl.uniformMatrix4fv(
+        unifrom,
+        true,
+        &[_][4][4]f32{matrix.data},
+    );
 }

@@ -3,10 +3,11 @@ const glfw = @import("glfw");
 const gl = @import("gl");
 const app = @import("app.zig");
 
-const Object = @import("Display/Object.zig");
+const Camera = @import("Display/Camera.zig");
+const GameObject = @import("Game/GameObject.zig");
 const Shader = @import("Display/Shader.zig");
 const Texture = @import("Display/Texture.zig");
-const vector = @import("vector.zig");
+const za = @import("zalgebra");
 
 const Allocator = std.mem.Allocator;
 
@@ -28,70 +29,50 @@ pub fn main() !void {
     };
     defer app.deinit();
 
-    const window = app.createWindow("Main Window", vector.Vec2.init(window_width, window_height), null) catch {
+    const window = app.createWindow("Main Window", window_width, window_height, null) catch {
         std.log.err("Failed to create GLFW window: {?s}", .{glfw.getErrorString()});
         std.process.exit(1);
     };
-
     window.background_color = app.Color.white;
 
     app.setVsync(true);
 
-    // zig fmt: off
-    const positions = [_]f32{
-        -0.5, -0.5, 0, 1,// 0
-        0.5, -0.5, 1, 1, // 1
-        0.5, 0.5, 1, 0,  // 2
-        -0.5, 0.5, 0, 0 // 3
-    };
-
-    // const positions2 = [_]f32{ 
-    //     -0.5, 0.15, 0, 1, 0, 
+    // const positions2 = [_]f32{
+    //     -0.5, 0.15, 0, 1, 0,
     //     0.5, 0.15, 0, 1, 1,
-    //     0.2, 0.35, 0, 1, 0, 
+    //     0.2, 0.35, 0, 1, 0,
     //     -0.2, 0.45, 0, 1, 1
     // };
     // zig fmt: on
     //_ = positions2;
 
-    const indices = [_]u32{ 0, 1, 2, 2, 3, 0  };
+    const mainCam = Camera.initDefault();
 
-    const layout = Object.Layout.init(&[2]Object.Attrib{ .{ .size = 2 }, .{ .size = 2 } });
+    const texture = try Texture.init(app.allocator(), "res/GMOS Back.png", 0);
+    texture.bind();
 
-    // var rect = Object.init(null, &positions, &indices, layout);
-    // defer rect.deinit();
-    const rect = try Object.create(&window.renderer, null, &positions, &indices, layout);
-    defer rect.deinit();
+    const rect = try GameObject.initSquare(&window.renderer, za.Vec2.new(0, 100), za.Vec2.new(100, 100), texture, null);
 
-    const text1 = try Texture.init(app.allocator(), "res/GMOS.png", 1);
-    text1.bind();
-
-    const text2 = try Texture.init(app.allocator(), "res/GMOS Back.png", 2);
-    text2.bind();
-
-    const text3 = try Texture.init(app.allocator(), "res/Logo.png", 3);
-    text3.bind();
-
-    const text4 = try Texture.init(app.allocator(), "res/LogoStraight.png", 4);
-    text4.bind();
-
-    rect.setUniform("Color", .{ .color = app.Color.colorRGB(255, 255, 255) });
-    rect.setUniform("Texture", .{ .texture = text1 });
-
-    // TODO: FIX TEXTURING SYSTEM
-    // currently it only doing 3 instead of 4, see by running app
-
+    // updating the rendering object to be render on the window using the main camera
+    var w_btn_press: bool = false;
+    var s_btn_press: bool = false;
     while (!window.shouldClose()) {
-        if (window.getKeyPress(.one)) {
-            rect.setUniform("Texture", .{ .texture = text1 });
-        } else if (window.getKeyPress(.two)) {
-            rect.setUniform("Texture", .{ .texture = text2 });
-        } else if (window.getKeyPress(.three)) {
-            rect.setUniform("Texture", . {.texture = text3 });
-        } else if (window.getKeyPress(.four)) {
-            rect.setUniform("Texture", . {.texture = text4 });
+        if (!w_btn_press and window.getKeyPress(.w)) {
+            rect.internal.postion.yMut().* += 1;
+            w_btn_press = true;
+        } else if (w_btn_press and window.getKeyRelease(.w)) {
+            w_btn_press = false;
         }
 
-        window.render();
+        if (!s_btn_press and window.getKeyPress(.s)) {
+            rect.internal.postion.yMut().* -= 1;
+            s_btn_press = true;
+        } else if (s_btn_press and window.getKeyRelease(.s)) {
+            s_btn_press = false;
+        }
+
+        window.update();
+
+        window.render(mainCam);
     }
 }
