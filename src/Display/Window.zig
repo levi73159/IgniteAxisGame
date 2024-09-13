@@ -43,7 +43,7 @@ pub fn create(allocator: Allocator, title: [*:0]const u8, size: app.Size) !Self 
 
 pub fn getProjectionMatrix(self: Self) za.Mat4 {
     const window_size = self.getSize();
-    return za.orthographic(0, @floatFromInt(window_size.width), 0, @floatFromInt(window_size.height), -1, 1);
+    return za.orthographic(0, @floatFromInt(window_size.width), @floatFromInt(window_size.height), 0, -1, 1);
 }
 
 pub fn setDefaultShader(self: *Self, name: []const u8) void {
@@ -79,7 +79,7 @@ pub fn getDefaultShader(self: *Self) *Shader {
     return &self._default_shader;
 }
 
-// wraper so we dont have to accsess context
+// wraper so we dont have to accsess
 pub inline fn setTitle(self: Self, title: [*:0]const u8) void {
     self.contex.setTitle(title);
 }

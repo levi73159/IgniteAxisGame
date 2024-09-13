@@ -47,10 +47,10 @@ pub fn init(pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, shader
 
 pub fn initSquare(pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, shader: ?Shader) Self {
     const positions = [_]f32{
-        0, 0, 0, 0, // 0
-        1, 0, 1, 0, // 1
-        1, -1, 1, 1, // 2
-        0, -1, 0, 1, // 3
+        0, 0, 0, 1, // 0
+        1, 0, 1, 1, // 1
+        1, -1, 1, 0, // 2
+        0, -1, 0, 0, // 3
     };
     const indices = [_]u32{ 0, 1, 2, 2, 3, 0 };
     
