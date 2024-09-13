@@ -49,7 +49,7 @@ pub fn main() !void {
             Game.SceneObject.initClone(za.Vec2.new(350, 350), za.Vec2.new(120, 80), app.Color.green, texture, 0)
         }),
         Game.Scene.init(allocator, "Logo", &[_]Game.SceneObject{
-            Game.SceneObject.initSquare(za.Vec2.new((window_width/2)-(600/2), window_height), za.Vec2.new(600, 600), app.Color.white, logo, null)
+            Game.SceneObject.initSquare(za.Vec2.new((window_width/2)-(600/2), 0), za.Vec2.new(600, 600), app.Color.white, logo, null)
         })
     });
     // zig fmt: on
