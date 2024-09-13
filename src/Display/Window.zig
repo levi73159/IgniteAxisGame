@@ -1,7 +1,8 @@
 const za = @import("zalgebra");
 const glfw = @import("glfw");
+const std = @import("std");
 
-const Allocator = @import("std").mem.Allocator;
+const Allocator = std.mem.Allocator;
 const Key = glfw.Key;
 const Color = @import("Color.zig");
 const Shader = @import("Shader.zig");
@@ -78,11 +79,20 @@ pub fn getDefaultShader(self: *Self) *Shader {
     return &self._default_shader;
 }
 
+// wraper so we dont have to accsess context
+pub inline fn setTitle(self: Self, title: [*:0]const u8) void {
+    self.contex.setTitle(title);
+}
+
 // Update window
 pub fn update(self: *Self) void {
     const size = self.getSize();
     app.setViewport(size.width, size.height);
+
+    self.contex.swapBuffers();
+    glfw.pollEvents();
 }
+
 
 // Calls `Renderer.render()`
 pub fn render(self: *Self, cam: Camera) void {

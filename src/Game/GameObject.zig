@@ -18,29 +18,37 @@ texture: Texture,
 internal: *Object, // The internal Rendering object
 renderer: *Window.Renderer, // reference to the renderer the object is being drawn on
 
+
+
 // zig fmt: off
 pub fn init(renderer: *Window.Renderer, 
             pos: za.Vec2, scale: za.Vec2, 
-            tex: Texture, shader: ?Shader, 
+            color: Color, tex: Texture, shader: ?Shader, 
             vertices: []align(1) const f32, 
             indices: []align(1) const u32, 
             layout: Object.Layout) !Self {
     const internal_rendering_object = try Object.create(renderer, shader, vertices, indices, layout);
 
-    return Self.initFromObject(renderer, pos, scale, tex, internal_rendering_object);
+    return Self.initFromObject(renderer, pos, scale, color, tex, internal_rendering_object);
 }
 // zig fmt: on
 
+pub fn initExist(renderer: *Window.Renderer, pos: za.Vec2, scale: za.Vec2, color: Color, tex: Texture, shader: ?Shader, vertex_id: u32, layout: Object.Layout) !Self {
+    const internal_rendering_object = try Object.createExisting(renderer, shader, vertex_id, layout);
+
+    return Self.initFromObject(renderer, pos, scale, color, tex, internal_rendering_object);
+}
+
 /// renderer is what will be rendering the object
-pub fn initFromObject(renderer: *Window.Renderer, pos: za.Vec2, scale: za.Vec2, tex: Texture, internal_object: *Object) Self {
-    internal_object.setUniform("Color", .{ .color = Color.white });
+pub fn initFromObject(renderer: *Window.Renderer, pos: za.Vec2, scale: za.Vec2, color: Color, tex: Texture, internal_object: *Object) Self {
+    internal_object.setUniform("Color", .{ .color = color });
     internal_object.setUniform("Texture", .{ .texture = tex });
 
     internal_object.postion = pos;
     internal_object.scale = scale;
     internal_object.roation = 0;
 
-    return Self{ .texture = tex, .color = Color.white, .internal = internal_object, .renderer = renderer };
+    return Self{ .texture = tex, .color = color, .internal = internal_object, .renderer = renderer };
 }
 
 /// renderer is what will be rendering the object
@@ -58,6 +66,15 @@ pub fn initSquare(renderer: *Window.Renderer, pos: za.Vec2, scale: za.Vec2, tex:
 // does not deinit texture, must deinit manually
 pub fn deinit(self: *const Self) void {
     self.internal.deinit();
+}
+
+pub fn clone(self: Self) !Self {
+    return Self{
+        .color = self.color,
+        .texture = self.texture,
+        .renderer = self.renderer,
+        .internal = try self.internal.clone(self.renderer),
+    };
 }
 
 pub fn destroy(self: *Self) void {
@@ -78,8 +95,4 @@ pub fn setColor(self: *Self, color: Color) void {
 pub fn setTexture(self: *Self, texture: Texture) void {
     self.texture = texture;
     self.update();
-}
-
-pub fn draw(self: *Self) void {
-    self.internal.draw();
 }

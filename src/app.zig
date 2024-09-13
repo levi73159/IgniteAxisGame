@@ -2,6 +2,7 @@ const std = @import("std");
 const glfw = @import("glfw");
 const gl = @import("gl");
 const math = @import("zalgebra");
+
 const Shader = @import("Display/Shader.zig");
 
 pub const Window = @import("Display/Window.zig");
@@ -28,6 +29,7 @@ fn glGetProcAddress(_: glfw.GLProc, proc: [:0]const u8) ?gl.binding.FunctionPoin
 
 pub const InitError = error{ AlreadyInit, GLFWInit };
 
+/// init glfw and everthing else
 pub fn init() InitError!void {
     if (been_init) return error.AlreadyInit;
 
@@ -36,9 +38,11 @@ pub fn init() InitError!void {
     }
     app_gpa = std.heap.GeneralPurposeAllocator(.{}){};
 
+    Object.Vertices.initBuffers(allocator());
     been_init = true;
 }
 
+/// init everthing related to open gl
 fn initOpenGL() !void {
     if (opengl_init) return error.AlreadyInit;
     opengl_init = true;
@@ -58,6 +62,8 @@ pub fn deinit() void {
     if (primary_window != null) {
         primary_window.?.close();
     }
+
+    Object.Vertices.deinitBuffers();
 
     const denit_status = app_gpa.deinit();
     if (denit_status == .leak) log.warn("Mem leak detected", .{});

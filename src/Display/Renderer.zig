@@ -34,29 +34,23 @@ pub fn addObject(self: *Self, obj: *Object) !void {
     try self.objects.append(obj);
 }
 
-/// copies the object and return ref to it
-///
-/// NOTE: does not need to be freed, `Renderer` frees all objects, notice that this behiavor may change in later versions
-pub fn addObjectCopy(self: *Self, obj: Object) !*Object {
-    const object_ptr = try self.allocator.create(Object);
-    object_ptr.* = obj;
-    object_ptr.id = self.objects.items.len;
-    try self.objects.append(object_ptr);
-    return object_ptr;
-}
-
 pub fn getObject(self: *const Self, index: usize) *Object {
     return &self.objects.items[index];
 }
 
 pub fn removeIndex(self: *Self, index: usize, deinit_obj: bool) void {
-    const obj = self.objects.orderedRemove(index);
+    const removed_obj = self.objects.orderedRemove(index);
     if (deinit_obj) {
-        obj.deinit();
+        removed_obj.deinit();
     }
 
     // and now we want to free object
-    self.allocator.destroy(obj);
+    self.allocator.destroy(removed_obj);
+
+    // and now we got to shift the object id to left
+    for (self.objects.items, 0..) |obj, obj_id| {
+        obj.id = obj_id; // update all the obj rendering ids 
+    }
 }
 
 pub fn render(self: Self, camera: Camera, window: *const Window, default_shader: *Shader) void {
@@ -73,7 +67,4 @@ pub fn render(self: Self, camera: Camera, window: *const Window, default_shader:
             object.draw();
         }
     }
-
-    window.contex.swapBuffers();
-    glfw.pollEvents();
 }

@@ -3,7 +3,7 @@ const glfw = @import("glfw");
 const gl = @import("gl");
 const app = @import("app.zig");
 
-const Camera = @import("Display/Camera.zig");
+const Game = @import("Game/Game.zig");
 const GameObject = @import("Game/GameObject.zig");
 const Shader = @import("Display/Shader.zig");
 const Texture = @import("Display/Texture.zig");
@@ -15,11 +15,6 @@ const window_width = 800;
 const window_height = 600;
 
 pub fn main() !void {
-    // if (!glfw.init(.{})) {
-    //     std.log.err("Failed to initialize GLFW: {?s}", .{glfw.getErrorString()});
-    //     std.process.exit(1);
-    // }
-    // defer glfw.terminate();
     app.init() catch |err| switch (err) {
         error.AlreadyInit => unreachable,
         error.GLFWInit => {
@@ -29,41 +24,48 @@ pub fn main() !void {
     };
     defer app.deinit();
 
+    const allocator = app.allocator();
+
     const window = app.createWindow("Main Window", window_width, window_height, null) catch {
         std.log.err("Failed to create GLFW window: {?s}", .{glfw.getErrorString()});
         std.process.exit(1);
     };
-    window.background_color = app.Color.white;
+    window.contex.setAttrib(.resizable, false);
 
     app.setVsync(true);
 
-    const mainCam = Camera.initDefault();
-    
     const texture = try Texture.init(app.allocator(), "res/white.png", 0);
+    defer texture.deinit();
     texture.bind();
 
-    const rect = try GameObject.initSquare(&window.renderer, za.Vec2.new(0, 100), za.Vec2.new(100, 100), texture, null);
+    const logo = try Texture.init(app.allocator(), "res/Logo.png", 1);
+    defer logo.deinit();
+    logo.bind();
+
+    // zig fmt: off
+    var game = try Game.init(window, Game.Camera.initDefault(), &[_]Game.Scene{
+        Game.Scene.init(allocator, "Main Scene", &[_]Game.SceneObject{
+            Game.SceneObject.initSquare(za.Vec2.new(0, 200), za.Vec2.new(100, 100), app.Color.red, texture, null),
+            Game.SceneObject.initClone(za.Vec2.new(350, 350), za.Vec2.new(120, 80), app.Color.green, texture, 0)
+        }),
+        Game.Scene.init(allocator, "Logo", &[_]Game.SceneObject{
+            Game.SceneObject.initSquare(za.Vec2.new((window_width/2)-(600/2), window_height), za.Vec2.new(600, 600), app.Color.white, logo, null)
+        })
+    });
+    // zig fmt: on
+    defer game.deinit();
 
     // updating the rendering object to be render on the window using the main camera
-    var w_btn_press: bool = false;
-    var s_btn_press: bool = false;
     while (!window.shouldClose()) {
-        if (!w_btn_press and window.getKeyPress(.w)) {
-            rect.internal.postion.yMut().* += 1;
-            w_btn_press = true;
-        } else if (w_btn_press and window.getKeyRelease(.w)) {
-            w_btn_press = false;
+        game.update();
+
+        if (window.getKeyPress(.one)) {
+            try game.load(0);
+            
+        } else if (window.getKeyPress(.two)) {
+            try game.load(1);
         }
 
-        if (!s_btn_press and window.getKeyPress(.s)) {
-            rect.internal.postion.yMut().* -= 1;
-            s_btn_press = true;
-        } else if (s_btn_press and window.getKeyRelease(.s)) {
-            s_btn_press = false;
-        }
-
-        window.update();
-
-        window.render(mainCam);
+        game.render();
     }
 }

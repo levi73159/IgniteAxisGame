@@ -7,7 +7,9 @@ const Texture = @import("Texture.zig");
 const Self = @This();
 const math = @import("zalgebra");
 
-program: gl.Program,
+var current_shader: u32 = 0; // 0 is invalid, see gl.Shader
+
+shader_id: u32,
 uniform_cache: std.StringHashMap(u32),
 
 fn compileShader(allocator: Allocator, shaderType: gl.ShaderType, filename: []const u8) !gl.Shader {
@@ -37,16 +39,16 @@ fn compileShader(allocator: Allocator, shaderType: gl.ShaderType, filename: []co
     return shader;
 }
 
-fn createShader(allocator: Allocator, shadername: []const u8) gl.Program {
+fn createShader(allocator: Allocator, shadername: []const u8) u32 {
     const vertex_filepath = std.fmt.allocPrint(allocator, "res/{s}.vert", .{shadername}) catch |err| {
         std.log.err("{any}", .{err});
-        return gl.Program.invalid;
+        return 0;
     };
     defer allocator.free(vertex_filepath);
 
     const frag_filepath = std.fmt.allocPrint(allocator, "res/{s}.frag", .{shadername}) catch |err| {
         std.log.err("{any}", .{err});
-        return gl.Program.invalid;
+        return 0;
     };
     defer allocator.free(frag_filepath);
 
@@ -54,13 +56,13 @@ fn createShader(allocator: Allocator, shadername: []const u8) gl.Program {
     const program = gl.Program.create();
     const vertex_shader: gl.Shader = compileShader(allocator, .vertex, vertex_filepath) catch |err| blk: {
         std.log.err("Failed to compile fragment shader: {any}", .{err});
-        break :blk gl.Shader.invalid;
+        break :blk .invalid;
     };
     defer vertex_shader.delete();
 
     const frag_shader: gl.Shader = compileShader(allocator, .fragment, frag_filepath) catch |err| blk: {
         std.log.err("Failed to compile fragment shader: {any}", .{err});
-        break :blk gl.Shader.invalid;
+        break :blk .invalid;
     };
     defer frag_shader.delete();
 
@@ -68,20 +70,23 @@ fn createShader(allocator: Allocator, shadername: []const u8) gl.Program {
     program.attach(frag_shader);
     program.link();
 
-    return program;
+    return @intFromEnum(program);
 }
 
 pub fn init(allocator: Allocator, shadername: []const u8) Self {
-    const shader_program = createShader(allocator, shadername);
-    return Self{ .program = shader_program, .uniform_cache = std.StringHashMap(u32).init(allocator) };
+    const shader_id = createShader(allocator, shadername);
+    return Self{ .shader_id = shader_id, .uniform_cache = std.StringHashMap(u32).init(allocator) };
 }
 
 pub fn use(self: Self) void {
-    self.program.use();
+    if (current_shader == self.shader_id) return;
+
+    gl.useProgram(@enumFromInt(self.shader_id));
+    current_shader = self.shader_id;
 }
 
 pub fn deinit(self: *Self) void {
-    self.program.delete();
+    gl.deleteProgram(@enumFromInt(self.shader_id));
     self.uniform_cache.deinit();
 }
 
@@ -102,7 +107,7 @@ fn getUniform(self: *Self, name: [:0]const u8) ?u32 {
         if (maybe_location) |loc| {
             break :blk loc;
         } else {
-            const maybe_loc = gl.getUniformLocation(self.program, real_name);
+            const maybe_loc = gl.getUniformLocation(@enumFromInt(self.shader_id), real_name);
             if (maybe_loc) |loc| {
                 self.uniform_cache.put(name, loc) catch {
                     std.log.err("OUT OF MEMORY IN UNIFROM CACHE!", .{});
