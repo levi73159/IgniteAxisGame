@@ -5,10 +5,12 @@ const math = @import("zalgebra");
 
 const Shader = @import("Display/Shader.zig");
 
+pub const input = @import("Game/input.zig");
+
 pub const Window = @import("Display/Window.zig");
 pub const Color = @import("Display/Color.zig");
 pub const Object = @import("Display/Object.zig");
-pub const Key = glfw.Key;
+pub const Key = input.Key;
 
 const log = std.log.scoped(.app);
 
@@ -51,11 +53,14 @@ fn initOpenGL() !void {
     gl.loadExtensions(opengl_proc, glGetProcAddress) catch return error.EntryPointNotFound;
 
     // enabling blending
-    gl.enable(.blend);  
+    gl.enable(.blend);
     gl.blendFunc(.src_alpha, .one_minus_src_alpha);
 
     // setting default layout
-    default_layout = Object.Layout.init(&[2]Object.Attrib { .{ .size = 2 }, .{ .size = 2}, });
+    default_layout = Object.Layout.init(&[2]Object.Attrib{
+        .{ .size = 2 },
+        .{ .size = 2 },
+    });
 }
 
 pub fn deinit() void {
@@ -90,11 +95,13 @@ pub fn createWindow(title: [*:0]const u8, width: u32, height: u32, default_shade
     if (!been_init)
         try init();
 
-    primary_window = try Window.create(allocator(), title, .{.width = width, .height = height});
+    primary_window = try Window.create(allocator(), title, .{ .width = width, .height = height });
     glfw.makeContextCurrent(primary_window.?.contex);
 
     if (!opengl_init)
         try initOpenGL();
+
+    input.init(&(primary_window.?));
     log.info("Window {s}, Version: {s}\n", .{ title, gl.getString(.version) orelse "null" });
 
     setViewport(width, height);

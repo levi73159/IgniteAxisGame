@@ -9,6 +9,8 @@ const Shader = @import("Display/Shader.zig");
 const Texture = @import("Display/Texture.zig");
 const za = @import("zalgebra");
 
+const input = app.input;
+
 const Allocator = std.mem.Allocator;
 
 const window_width = 800;
@@ -31,12 +33,13 @@ pub fn main() !void {
         std.process.exit(1);
     };
     window.contex.setAttrib(.resizable, false);
+    window.background_color = app.Color.colorF(0.2, 0.4, 0.5);
 
     app.setVsync(true);
 
-    const texture = try Texture.init(app.allocator(), "res/white.png", 0);
-    defer texture.deinit();
-    texture.bind();
+    const square = try Texture.init(app.allocator(), "res/white.png", 0);
+    defer square.deinit();
+    square.bind();
 
     const logo = try Texture.init(app.allocator(), "res/Logo.png", 1);
     defer logo.deinit();
@@ -44,27 +47,22 @@ pub fn main() !void {
 
     // zig fmt: off
     var game = try Game.init(window, Game.Camera.initDefault(), &[_]Game.Scene{
-        Game.Scene.init(allocator, "Main Scene", &[_]Game.SceneObject{
-            Game.SceneObject.initSquare(za.Vec2.new(0, 200), za.Vec2.new(100, 100), app.Color.red, texture, null),
-            Game.SceneObject.initClone(za.Vec2.new(350, 350), za.Vec2.new(120, 80), app.Color.green, texture, 0)
+        Game.Scene.init(allocator, "Playground", &[_]Game.SceneObject{
+            Game.SceneObject.initSquare(za.Vec2.new(0, window_height-50), za.Vec2.new(window_width, 50), app.Color.green, square, null),
         }),
-        Game.Scene.init(allocator, "Logo", &[_]Game.SceneObject{
-            Game.SceneObject.initSquare(za.Vec2.new((window_width/2)-(600/2), 0), za.Vec2.new(600, 600), app.Color.white, logo, null)
-        })
     });
     // zig fmt: on
     defer game.deinit();
 
+    var player =
+        try GameObject.initSquare(&window.renderer, za.Vec2.new(200, 200), za.Vec2.new(100, 100), app.Color.red, square, null);
+    const speed = 5.0;
     // updating the rendering object to be render on the window using the main camera
     while (!window.shouldClose()) {
         game.update();
 
-        if (window.getKeyPress(.one)) {
-            try game.load(0);
-            
-        } else if (window.getKeyPress(.two)) {
-            try game.load(1);
-        }
+        var vec = input.getVec(.w, .s, .a, .d);
+        player.internal.postion = player.internal.postion.add(vec.norm().mul(za.Vec2.new(speed, speed)));
 
         game.render();
     }

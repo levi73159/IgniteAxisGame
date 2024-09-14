@@ -22,11 +22,11 @@ pub fn colorRGBA(r: u8, g: u8, b: u8, a: u8) Self {
 }
 
 pub fn colorF(r: f32, g: f32, b: f32) Self {
-    return .{ .r = @truncate(r * 255), .g = @truncate(g * 255), .b = @truncate(b * 255) };
+    return colorFA(r, g, b, 1);
 }
 
 pub fn colorFA(r: f32, g: f32, b: f32, a: f32) Self {
-    return .{ .r = @truncate(r * 255), .g = @truncate(g * 255), .b = @truncate(b * 255), .a = @truncate(a * 255) };
+    return .{ .r = @truncate(@as(u32, @intFromFloat(r * 255))), .g = @truncate(@as(u32, @intFromFloat(g * 255))), .b = @truncate(@as(u32, @intFromFloat(b * 255))), .a = @truncate(@as(u32, @intFromFloat(a * 255))) };
 }
 
 pub fn getRealColor(color: Self) RealColor {

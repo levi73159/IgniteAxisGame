@@ -18,8 +18,6 @@ texture: Texture,
 internal: *Object, // The internal Rendering object
 renderer: *Window.Renderer, // reference to the renderer the object is being drawn on
 
-
-
 // zig fmt: off
 pub fn init(renderer: *Window.Renderer, 
             pos: za.Vec2, scale: za.Vec2, 
@@ -52,15 +50,15 @@ pub fn initFromObject(renderer: *Window.Renderer, pos: za.Vec2, scale: za.Vec2, 
 }
 
 /// renderer is what will be rendering the object
-pub fn initSquare(renderer: *Window.Renderer, pos: za.Vec2, scale: za.Vec2, tex: Texture, shader: ?Shader) !Self {
+pub fn initSquare(renderer: *Window.Renderer, pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, shader: ?Shader) !Self {
     const positions = [_]f32{
-        0, 0, 0, 1, // 0
-        1, 0, 1, 1, // 1
-        1, 1, 1, 0, // 2
-        0, 1, 0, 0, // 3
+        0, 0, 0, 0, // 0
+        1, 0, 1, 0, // 1
+        1, 1, 1, 1, // 2
+        0, 1, 0, 1, // 3
     };
     const indices = [_]u32{ 0, 1, 2, 2, 3, 0 };
-    return Self.init(renderer, pos, scale, tex, shader, &positions, &indices, app.defaultLayout().*);
+    return Self.init(renderer, pos, scale, color, tex, shader, &positions, &indices, app.defaultLayout().*);
 }
 
 // does not deinit texture, must deinit manually
