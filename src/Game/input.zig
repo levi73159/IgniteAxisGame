@@ -44,9 +44,9 @@ pub fn keyHold(key: Key) bool {
 pub fn getAxis(neg: Key, pos: Key) f32 {
     var axis: f32 = 0;
 
-    if (keys.get(neg) == .press)
+    if (keyHold(neg))
         axis -= 1;
-    if (keys.get(pos) == .press)
+    if (keyHold(pos))
         axis += 1;
 
     return axis;

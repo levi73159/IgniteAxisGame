@@ -63,18 +63,18 @@ pub fn main() !void {
 
     var player =
         try GameObject.initSquare(&window.renderer, za.Vec2.new(200, 200), za.Vec2.new(100, 100), app.Color.red, square, null);
-    const speed = 5.0;
+    const speed = 100.0;
 
-    const timer = try std.time.Timer.start();
+    var timer = try std.time.Timer.start();
     while (!window.shouldClose()) {
         game.update();
 
-        const dt: f32 = @truncate(@as(f64, @floatFromInt(timer.lap())) / 1e-9);
+        const dt: f32 = @as(f32, @floatFromInt(timer.lap())) / std.time.ns_per_s;
 
         const x = input.getAxis(.a, .d);
         const y = input.getAxis(.w, .s);
         const velocity = za.Vec2.new(x * speed * dt, y * speed * dt);
-        player.internal.postion = player.internal.postion.add(velocity);
+        player.internal.postion = player.internal.postion.add(velocity.norm());
 
         game.render();
     }
