@@ -56,8 +56,8 @@ pub fn initSquare(renderer: *Window.Renderer, pos: za.Vec2, scale: za.Vec2, tex:
     const positions = [_]f32{
         0, 0, 0, 1, // 0
         1, 0, 1, 1, // 1
-        1, -1, 1, 0, // 2
-        0, -1, 0, 0, // 3
+        1, 1, 1, 0, // 2
+        0, 1, 0, 0, // 3
     };
     const indices = [_]u32{ 0, 1, 2, 2, 3, 0 };
     return Self.init(renderer, pos, scale, tex, shader, &positions, &indices, app.defaultLayout().*);
