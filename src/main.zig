@@ -16,7 +16,11 @@ const Allocator = std.mem.Allocator;
 const window_width = 800;
 const window_height = 600;
 
+const dt_low_limit: f32 = 1000 / 60; // 60 fps
+const dt_high_limit: f32 = 1000 / 10; // 10 fps
+
 pub fn main() !void {
+    // init app
     app.init() catch |err| switch (err) {
         error.AlreadyInit => unreachable,
         error.GLFWInit => {
@@ -28,6 +32,7 @@ pub fn main() !void {
 
     const allocator = app.allocator();
 
+    // creating a window
     const window = app.createWindow("Main Window", window_width, window_height, null) catch {
         std.log.err("Failed to create GLFW window: {?s}", .{glfw.getErrorString()});
         std.process.exit(1);
@@ -37,6 +42,7 @@ pub fn main() !void {
 
     app.setVsync(true);
 
+    // initlize textures
     const square = try Texture.init(app.allocator(), "res/white.png", 0);
     defer square.deinit();
     square.bind();
@@ -45,6 +51,7 @@ pub fn main() !void {
     defer logo.deinit();
     logo.bind();
 
+    // initlizeing game and it scenes
     // zig fmt: off
     var game = try Game.init(window, Game.Camera.initDefault(), &[_]Game.Scene{
         Game.Scene.init(allocator, "Playground", &[_]Game.SceneObject{
@@ -57,12 +64,17 @@ pub fn main() !void {
     var player =
         try GameObject.initSquare(&window.renderer, za.Vec2.new(200, 200), za.Vec2.new(100, 100), app.Color.red, square, null);
     const speed = 5.0;
-    // updating the rendering object to be render on the window using the main camera
+
+    const timer = try std.time.Timer.start();
     while (!window.shouldClose()) {
         game.update();
 
-        var vec = input.getVec(.w, .s, .a, .d);
-        player.internal.postion = player.internal.postion.add(vec.norm().mul(za.Vec2.new(speed, speed)));
+        const dt: f32 = @truncate(@as(f64, @floatFromInt(timer.lap())) / 1e-9);
+
+        const x = input.getAxis(.a, .d);
+        const y = input.getAxis(.w, .s);
+        const velocity = za.Vec2.new(x * speed * dt, y * speed * dt);
+        player.internal.postion = player.internal.postion.add(velocity);
 
         game.render();
     }
