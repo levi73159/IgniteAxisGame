@@ -80,8 +80,8 @@ pub fn getDefaultShader(self: *Self) *Shader {
 }
 
 // wraper so we dont have to accsess
-pub inline fn setTitle(self: Self, title: [*:0]const u8) void {
-    self.contex.setTitle(title);
+pub inline fn setTitle(self: Self, title: [:0]const u8) void {
+    self.contex.setTitle(title.ptr);
 }
 
 // Update window

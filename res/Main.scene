@@ -1,0 +1,27 @@
+{
+    "name": "Playground",
+    "objects": [
+        {
+            "name": "Ground",
+            "vertices": "Square",
+            "x": 0,
+            "y": 550,
+            "w": 2500,
+            "h": 50,
+            "color": "#FF1240",
+            "texture": "square",
+            "shader": null
+        },
+        {
+            "name": "Logo",
+            "vertices": "Square",
+            "x": 50,
+            "y": 50,
+            "w": 250,
+            "h": 250,
+            "color": "white",
+            "texture": "logo",
+            "shader": null
+        }
+    ]
+}

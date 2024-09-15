@@ -49,12 +49,19 @@ pub fn main() !void {
     defer square.deinit();
     square.bind();
 
+    const logo = try Texture.init(app.allocator(), "res/Logo.png", 1);
+    defer logo.deinit();
+    logo.bind();
+
     // initlizeing game and it scenes
     // zig fmt: off
+    // var game = try Game.init(window, Game.Camera.initDefault(), &[_]Game.Scene{
+    //     Game.Scene.init(allocator, "Playground", &[_]Game.SceneObject{
+    //         Game.SceneObject.initSquare("Ground", za.Vec2.new(0, window_height-50), za.Vec2.new(window_width, 50), app.Color.green, square, null),
+    //     }),
+    // });
     var game = try Game.init(window, Game.Camera.initDefault(), &[_]Game.Scene{
-        Game.Scene.init(allocator, "Playground", &[_]Game.SceneObject{
-            Game.SceneObject.initSquare("Ground", za.Vec2.new(0, window_height-50), za.Vec2.new(window_width, 50), app.Color.green, square, null),
-        }),
+        try Game.Scene.fromFile(allocator, "Main", .{.square = square, .logo = logo}),
     });
     // zig fmt: on
     defer game.deinit();
