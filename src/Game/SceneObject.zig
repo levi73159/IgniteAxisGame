@@ -20,6 +20,7 @@ const Data = union(enum) {
     existing: struct { buffer_id: u32, shader: ?Shader, layout: Object.Layout },
 };
 
+name: []const u8,
 object: ?GameObject = null,
 data: Data,
 pos: za.Vec2,
@@ -27,9 +28,10 @@ scale: za.Vec2,
 texture: Texture,
 color: app.Color = app.Color.white,
 
-pub fn init(pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, shader: ?Shader, vertices: []align(1) const f32, indices: []align(1) const u32, layout: Object.Layout) Self {
+pub fn init(name: []const u8, pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, shader: ?Shader, vertices: []align(1) const f32, indices: []align(1) const u32, layout: Object.Layout) Self {
     // zig fmt: off
     return Self{
+        .name = name,
         .pos = pos,
         .scale = scale, 
         .texture = tex, 
@@ -45,7 +47,7 @@ pub fn init(pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, shader
     };
 }
 
-pub fn initSquare(pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, shader: ?Shader) Self {
+pub fn initSquare(name: []const u8, pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, shader: ?Shader) Self {
     const positions = [_]f32{
         0, 0, 0, 0, // 0
         1, 0, 1, 0, // 1
@@ -54,11 +56,12 @@ pub fn initSquare(pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, 
     };
     const indices = [_]u32{ 0, 1, 2, 2, 3, 0 };
     
-    return init(pos, scale, color, tex, shader, &positions, &indices, app.defaultLayout().*);
+    return init(name, pos, scale, color, tex, shader, &positions, &indices, app.defaultLayout().*);
 }
 
-pub fn initClone(pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, index: usize) Self {
+pub fn initClone(name: []const u8, pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, index: usize) Self {
     return Self{ 
+        .name = name,
         .pos = pos,
         .scale = scale,
         .color = color,
@@ -67,8 +70,9 @@ pub fn initClone(pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, i
     };
 }
 
-pub fn initExisting(pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, buffer_id: u32, shader: ?Shader, layout: Object.Layout) Self {
+pub fn initExisting(name: []const u8, pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, buffer_id: u32, shader: ?Shader, layout: Object.Layout) Self {
     return Self{
+        .name = name,
         .pos = pos,
         .scale = scale,
         .color = color,
@@ -101,7 +105,8 @@ pub fn load(self: *Self, renderer: *Renderer, objects: []const Self) !void {
         } else if (self.data == .clone) {
             const obj_to_clone = objects[self.data.clone];
             if (obj_to_clone.object) |go| {
-                self.object = try GameObject.initExist(renderer, 
+                self.object = try GameObject.initExist(
+                    renderer, 
                     self.pos, 
                     self.scale, 
                     self.color,

@@ -18,7 +18,7 @@ const Action = enum(u2) {
 fn inputCallback(_: glfw.Window, key: Key, _: i32, action: glfw.Action, _: glfw.Mods) void {
     keys.set(key, switch (action) {
         .release => Action.release,
-        .press => Action.press,
+        .press => if(keys.get(key) == .press) Action.repeat else Action.press,
         .repeat => Action.repeat,
     });
 }

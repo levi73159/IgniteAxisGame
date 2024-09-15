@@ -13,11 +13,13 @@ const input = app.input;
 
 const Allocator = std.mem.Allocator;
 
-const window_width = 800;
+const window_width = 1000;
 const window_height = 600;
 
-const dt_low_limit: f32 = 1000 / 60; // 60 fps
-const dt_high_limit: f32 = 1000 / 10; // 10 fps
+const dt_low_limit: f32 = 1.0 / 90.0; // 90 fps
+const dt_high_limit: f32 = 1.0 / 10.0; // 10 fps
+
+const gravity: f32 = 100.19;
 
 pub fn main() !void {
     // init app
@@ -47,34 +49,54 @@ pub fn main() !void {
     defer square.deinit();
     square.bind();
 
-    const logo = try Texture.init(app.allocator(), "res/Logo.png", 1);
-    defer logo.deinit();
-    logo.bind();
-
     // initlizeing game and it scenes
     // zig fmt: off
     var game = try Game.init(window, Game.Camera.initDefault(), &[_]Game.Scene{
         Game.Scene.init(allocator, "Playground", &[_]Game.SceneObject{
-            Game.SceneObject.initSquare(za.Vec2.new(0, window_height-50), za.Vec2.new(window_width, 50), app.Color.green, square, null),
+            Game.SceneObject.initSquare("Ground", za.Vec2.new(0, window_height-50), za.Vec2.new(window_width, 50), app.Color.green, square, null),
         }),
     });
     // zig fmt: on
     defer game.deinit();
 
-    var player =
+    const player =
         try GameObject.initSquare(&window.renderer, za.Vec2.new(200, 200), za.Vec2.new(100, 100), app.Color.red, square, null);
-    const speed = 100.0;
+
+    const speed = 500.0;
+    const jump_height = 250.0;
+
+    const ground = game.getObjectAtIndex(0) orelse unreachable;
 
     var timer = try std.time.Timer.start();
+    var velocity = za.Vec2.new(0, 0);
     while (!window.shouldClose()) {
         game.update();
 
-        const dt: f32 = @as(f32, @floatFromInt(timer.lap())) / std.time.ns_per_s;
+        const dt: f32 = blk: {
+            var dt: f32 = @as(f32, @floatFromInt(timer.lap())) / std.time.ns_per_s;
+            if (dt > dt_high_limit) {
+                dt = dt_high_limit;
+            } else if (dt < dt_low_limit) {
+                dt = dt_low_limit;
+            }
+            break :blk dt;
+        };
 
-        const x = input.getAxis(.a, .d);
-        const y = input.getAxis(.w, .s);
-        const velocity = za.Vec2.new(x * speed * dt, y * speed * dt);
-        player.internal.postion = player.internal.postion.add(velocity.norm());
+        const x = input.getAxis(.a, .d) * speed;
+
+        velocity.xMut().* = x;
+        velocity.yMut().* += gravity * dt;
+
+        player.position().* = player.position().add(velocity.mul(za.Vec2.new(dt, dt)));
+
+        if (player.position().y() + player.scale().y() > ground.position().y()) {
+            velocity.yMut().* = 2;
+            if (input.keyDown(.space)) {
+                velocity.yMut().* = -std.math.sqrt(jump_height * 2.0 * gravity);
+            }
+        }
+        player.position().yMut().* = std.math.clamp(player.position().y(), 0, ground.position().y() - player.scale().y());
+        player.position().xMut().* = std.math.clamp(player.position().x(), 0, window_width - player.scale().x());
 
         game.render();
     }

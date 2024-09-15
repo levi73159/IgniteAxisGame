@@ -2,6 +2,7 @@ const std = @import("std");
 const app = @import("../app.zig");
 
 const Window = @import("../Display/Window.zig");
+const GameObject = @import("GameObject.zig");
 const Self = @This();
 
 pub const Camera = @import("../Display/Camera.zig");
@@ -90,6 +91,31 @@ pub fn loadName(self: *Self, name: [*:0]const u8) !void {
             break;
         }
     }
+}
+
+/// gets a game object from the current scene and returns it
+pub fn getObject(self: *const Self, name: []const u8) ?GameObject {
+    for (self.currentScene().objects) |*obj| {
+        if (std.meta.eql(obj.name, name))
+            return obj.object.?;
+    }
+    return null;
+}
+
+/// gets a game object fro, the current scene and returns it, returns null if index is out of range, warning becarefull when you unload the scene because then the internal
+/// rendering object will be freed and undefined
+pub fn getObjectAtIndex(self: *const Self, index: usize) ?GameObject {
+    const current_scene = self.currentScene();
+    return if (index < current_scene.objects.len)
+        current_scene.objects[index].object.?
+    else 
+        null;
+    
+}
+
+// returns a pointer to current scene
+pub fn currentScene(self: *const Self) *Scene {
+    return &self.scenes.items[self.current_scene_index];
 }
 
 pub fn reload(self: *Self) !void {
