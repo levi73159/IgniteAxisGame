@@ -3,24 +3,26 @@
     "objects": [
         {
             "name": "Ground",
-            "vertices": "Square",
+            "tag": "Ground",
+            "vertices": { "predefine": "Square" },
             "x": 0,
             "y": 550,
-            "w": 2500,
+            "w": 1000,
             "h": 50,
-            "color": "#FF1240",
+            "color": "#12FF12",
             "texture": "square",
             "shader": null
         },
         {
-            "name": "Logo",
-            "vertices": "Square",
-            "x": 50,
-            "y": 50,
+            "name": "Platform1",
+            "tag": "Platform",
+            "vertices": { "clone": 0 },
+            "x": 250,
+            "y": 350,
             "w": 250,
             "h": 250,
-            "color": "white",
-            "texture": "logo",
+            "color": "blue",
+            "texture": "square",
             "shader": null
         }
     ]

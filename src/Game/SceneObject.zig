@@ -1,3 +1,4 @@
+const std = @import("std");
 const za = @import("zalgebra");
 const app = @import("../app.zig");
 
@@ -12,8 +13,8 @@ const Self = @This();
 const Data = union(enum) {
     raw_data: struct {
         shader: ?Shader,
-        vertices: []align(1) const f32,
-        indices: []align(1) const u32,
+        vertices: []const f32,
+        indices: []const u32,
         layout: Object.Layout,
     },
     clone: usize,
@@ -21,6 +22,7 @@ const Data = union(enum) {
 };
 
 name: []const u8,
+tag: []const u8,
 object: ?GameObject = null,
 data: Data,
 pos: za.Vec2,
@@ -28,10 +30,11 @@ scale: za.Vec2,
 texture: Texture,
 color: app.Color = app.Color.white,
 
-pub fn init(name: []const u8, pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, shader: ?Shader, vertices: []align(1) const f32, indices: []align(1) const u32, layout: Object.Layout) Self {
+pub fn init(name: []const u8, tag: []const u8, pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, shader: ?Shader, vertices: []const f32, indices: []const u32, layout: Object.Layout) Self {
     // zig fmt: off
     return Self{
-        .name = name,
+        .name = app.allocator().dupe(u8, name) catch unreachable,
+        .tag = app.allocator().dupe(u8, tag) catch unreachable,
         .pos = pos,
         .scale = scale, 
         .texture = tex, 
@@ -39,15 +42,16 @@ pub fn init(name: []const u8, pos: za.Vec2, scale: za.Vec2, color: app.Color, te
         .data = Data{
             .raw_data  = .{
                 .shader = shader,
-                .vertices = vertices,
-                .indices = indices, 
+                .vertices = app.allocator().dupe(f32, vertices) catch std.debug.panic("NO MEMORY", .{}),
+                .indices = app.allocator().dupe(u32, indices)  catch std.debug.panic("NO MEMORY", .{}),
                 .layout = layout
             }
         }
     };
+    // zig fmt: on
 }
 
-pub fn initSquare(name: []const u8, pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, shader: ?Shader) Self {
+pub fn initSquare(name: []const u8, tag: []const u8, pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, shader: ?Shader) Self {
     const positions = [_]f32{
         0, 0, 0, 0, // 0
         1, 0, 1, 0, // 1
@@ -56,12 +60,13 @@ pub fn initSquare(name: []const u8, pos: za.Vec2, scale: za.Vec2, color: app.Col
     };
     const indices = [_]u32{ 0, 1, 2, 2, 3, 0 };
     
-    return init(name, pos, scale, color, tex, shader, &positions, &indices, app.defaultLayout().*);
+    return init(name, tag, pos, scale, color, tex, shader, &positions, &indices, app.defaultLayout().*);
 }
 
-pub fn initClone(name: []const u8, pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, index: usize) Self {
+pub fn initClone(name: []const u8, tag: []const u8, pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, index: usize) Self {
     return Self{ 
-        .name = name,
+        .name = app.allocator().dupe(u8, name) catch unreachable,
+        .tag = app.allocator().dupe(u8, tag) catch std.debug.panic("NO MEMORY!", .{}),
         .pos = pos,
         .scale = scale,
         .color = color,
@@ -70,9 +75,10 @@ pub fn initClone(name: []const u8, pos: za.Vec2, scale: za.Vec2, color: app.Colo
     };
 }
 
-pub fn initExisting(name: []const u8, pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, buffer_id: u32, shader: ?Shader, layout: Object.Layout) Self {
+pub fn initExisting(name: []const u8, tag: []const u8, pos: za.Vec2, scale: za.Vec2, color: app.Color, tex: Texture, buffer_id: u32, shader: ?Shader, layout: Object.Layout) Self {
     return Self{
-        .name = name,
+        .name = app.allocator().dupe(u8, name) catch unreachable,
+        .tag = app.allocator().dupe(u8, tag) catch std.debug.panic("NO MEMORY!", .{}),
         .pos = pos,
         .scale = scale,
         .color = color,
@@ -132,9 +138,19 @@ pub fn load(self: *Self, renderer: *Renderer, objects: []const Self) !void {
 }
 
 // just deinitlizes the game object
-pub fn deinit(self: *Self) void {
+pub fn unload(self: *Self) void {
     if (self.object != null) {
         self.object.?.destroy();
         self.object = null;
     }
+}
+
+pub fn deinit(self: *const Self) void {
+    const allocator = app.allocator();
+    if (self.data == .raw_data) {
+        allocator.free(self.data.raw_data.vertices);
+        allocator.free(self.data.raw_data.indices);
+    }
+    allocator.free(self.name);
+    allocator.free(self.tag);
 }

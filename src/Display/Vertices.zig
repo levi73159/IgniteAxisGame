@@ -55,10 +55,7 @@ pub const Layout = struct {
 
     pub fn set(layout: Layout, array_buffer: gl.Buffer) void {
         layout.vao.bind();
-        defer gl.VertexArray.bind(.invalid);
-
         array_buffer.bind(.array_buffer);
-        defer gl.Buffer.bind(.invalid, .array_buffer);
 
         var data_size: usize = 0;
         for (layout.attribs, 0..) |attrib, index| {
@@ -159,7 +156,7 @@ pub fn initBlank(layout: ?Layout) Self {
 }
 
 pub fn bind(self: Self) void {
-    self.layout.bind();
+    self.layout.set(@enumFromInt(self.vertex_buffer));
     gl.bindBuffer(@enumFromInt(self.indices), .element_array_buffer);
 }
 

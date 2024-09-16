@@ -1,6 +1,7 @@
 const std = @import("std");
 const gl = @import("gl");
 const za = @import("zalgebra");
+const app = @import("../app.zig");
 
 const Texture = @import("../Display/Texture.zig");
 const Shader = @import("../Display/Shader.zig");
@@ -27,8 +28,22 @@ pub fn init(allocator: std.mem.Allocator, name: [:0]const u8, objects: []const S
 }
 
 const ObjectJsonData = struct {
+    const VerticesType = union(enum) {
+        const VerticesInfo = struct {
+            vert: []const f32,
+            indi: []const u32,
+            layout: ?[]const u8,
+        };
+
+        predefine: []const u8,
+        vertices: VerticesInfo,
+        clone: usize,
+        existing: struct { buffer_id: u32, layout: ?[]const u8 },
+    };
+
     name: []const u8,
-    vertices: []const u8,
+    tag: []const u8,
+    vertices: VerticesType,
     x: f32,
     y: f32,
     w: f32,
@@ -67,7 +82,7 @@ pub fn fromFile(allocator: std.mem.Allocator, filename: []const u8, args: anytyp
 
     var objects: [256]SceneObject = undefined;
 
-    for (scene_data.value.objects, 0..) |data, index| {
+    for (scene_data.value.objects, 0..) |data, i| {
         const color: Color = blk: {
             if (data.color[0] == '#') {
                 const red_hex = data.color[1..3];
@@ -89,31 +104,82 @@ pub fn fromFile(allocator: std.mem.Allocator, filename: []const u8, args: anytyp
             break :blk Color.colorRGB(255, 155, 155);
         };
 
-        // todo: make it where the user can pick between textures and shaders
         var texture: ?Texture = null;
         var shader: ?Shader = null;
-
+        var layout: ?Object.Layout = null; // can be null and will be null and null is default
         inline for (args_fields) |field| {
             if (field.type == Texture and std.mem.eql(u8, data.texture, field.name)) {
                 texture = @field(args, field.name);
             } else if (data.shader != null and field.type == Shader and std.mem.eql(u8, data.shader.?, field.name)) {
                 shader = @field(args, field.name);
+            } else if (field.type == Object.Layout) {
+                if (data.vertices == .existing and data.vertices.existing.layout != null and std.mem.eql(u8, data.vertices.existing.layout.?, field.name)) {
+                    layout = @field(args, field.name);
+                } else if (data.vertices == .vertices and data.vertices.vertices.layout != null and std.mem.eql(u8, data.vertices.vertices.layout.?, field.name)) {
+                    layout = @field(args, field.name);
+                }
             }
         }
 
         if (texture == null) return error.TextureNotFound;
         if (data.shader != null and shader == null) return error.ShaderNotFound;
 
-        // zig fmt: off
-        objects[index] = SceneObject.initSquare(
-            data.name, 
-            za.Vec2.new(data.x, data.y), 
-            za.Vec2.new(data.w, data.h), 
-            color, 
-            texture.?, 
-            shader
-        );
-        // zig fmt: on
+        switch (data.vertices) {
+            .predefine => |object| {
+                if (std.mem.eql(u8, object, "Square")) {
+                    // zig fmt: off
+                    objects[i] = SceneObject.initSquare(
+                        data.name, data.tag,
+                        za.Vec2.new(data.x, data.y), 
+                        za.Vec2.new(data.w, data.h), 
+                        color, 
+                        texture.?, 
+                        shader
+                    );
+                    // zig fmt: on
+                } else {
+                    return error.InvalidPredefineVertex;
+                }
+            },
+            .clone => |index| {
+                // zig fmt: off
+                objects[i] = SceneObject.initClone(data.name, data.tag,
+                        za.Vec2.new(data.x, data.y), 
+                        za.Vec2.new(data.w, data.h), 
+                        color, 
+                        texture.?, 
+                        index
+                    );
+                // zig fmt: on
+            },
+            .existing => |existing| {
+                // zig fmt: off
+                objects[i] = SceneObject.initExisting(data.name, data.tag,
+                        za.Vec2.new(data.x, data.y), 
+                        za.Vec2.new(data.w, data.h), 
+                        color, 
+                        texture.?, 
+                        existing.buffer_id,
+                        shader,
+                        layout orelse app.defaultLayout().*
+                    );
+                // zig fmt: on
+            },
+            .vertices => |vertsInfo| {
+                // zig fmt: off
+                objects[i] = SceneObject.init(data.name, data.tag,
+                        za.Vec2.new(data.x, data.y), 
+                        za.Vec2.new(data.w, data.h), 
+                        color, 
+                        texture.?, 
+                        shader,
+                        vertsInfo.vert,
+                        vertsInfo.indi,
+                        layout orelse app.defaultLayout().*
+                );
+                // zig fmt: on
+            },
+        }
     }
 
     return Self.init(allocator, scene_data.value.name, objects[0..scene_data.value.objects.len]);
@@ -137,19 +203,22 @@ pub fn update(self: *Self) void {
 // unload the scene
 pub fn unload(self: *Self) void {
     for (self.objects) |*obj| {
-        obj.deinit();
+        obj.unload();
     }
 }
 
 pub fn reload(self: *Self, renderer: *Renderer) !void {
     for (self.objects) |*obj| {
-        obj.deinit();
+        obj.unload();
         try obj.load(renderer);
     }
 }
 
 // should unload objects first if objects are loaded
 pub fn deinit(self: *const Self) void {
+    for (self.objects) |obj| {
+        obj.deinit();
+    }
     self.allocator.free(self.name);
     self.allocator.free(self.objects);
 }

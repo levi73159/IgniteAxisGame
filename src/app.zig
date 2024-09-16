@@ -58,7 +58,7 @@ fn initOpenGL() !void {
 
     // setting default layout
     default_layout = Object.Layout.init(&[2]Object.Attrib{
-        .{ .size = 2 },
+        .{ .size = 2, .normilized = true },
         .{ .size = 2 },
     });
 }

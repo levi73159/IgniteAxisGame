@@ -96,7 +96,7 @@ pub fn loadName(self: *Self, name: [*:0]const u8) !void {
 /// gets a game object from the current scene and returns it
 pub fn getObject(self: *const Self, name: []const u8) ?GameObject {
     for (self.currentScene().objects) |*obj| {
-        if (std.meta.eql(obj.name, name))
+        if (std.mem.eql(u8, obj.name, name))
             return obj.object.?;
     }
     return null;
@@ -111,6 +111,31 @@ pub fn getObjectAtIndex(self: *const Self, index: usize) ?GameObject {
     else 
         null;
     
+}
+
+pub fn getObjectTag(self: *const Self, tag: []const u8, buffer: []GameObject) []GameObject {
+    var len: usize = 0;
+    for (self.currentScene().objects) |*obj| {
+        if (std.mem.eql(u8, obj.tag, tag)){
+            buffer[len] = obj.object orelse unreachable;
+            len += 1;
+        }
+    }
+    return buffer[0..len];
+}
+
+pub fn getObjectTagAlloc(self: *const Self, allocator: std.mem.Allocator, tag: []const u8) ![]GameObject {
+    var len: usize = 0;
+    var objects = try allocator.alloc(GameObject, 256); // allocates 256 game object of memory
+    errdefer allocator.free(objects);
+
+    for (self.currentScene().objects) |*obj| {
+        if (std.mem.eql(u8, obj.tag, tag)) {
+            objects[len] = obj.object orelse return error.ObjNotInit;
+            len += 1;
+        }
+    }
+    return allocator.realloc(objects, len);
 }
 
 // returns a pointer to current scene
