@@ -30,7 +30,7 @@ pub fn init(allocator: std.mem.Allocator, name: [:0]const u8, objects: []const S
 const ObjectJsonData = struct {
     const VerticesType = union(enum) {
         const VerticesInfo = struct {
-            vert: []const f32,
+            vertices: []const f32,
             indi: []const u32,
             layout: ?[]const u8,
         };
@@ -173,7 +173,7 @@ pub fn fromFile(allocator: std.mem.Allocator, filename: []const u8, args: anytyp
                         color, 
                         texture.?, 
                         shader,
-                        vertsInfo.vert,
+                        vertsInfo.vertices,
                         vertsInfo.indi,
                         layout orelse app.defaultLayout().*
                 );

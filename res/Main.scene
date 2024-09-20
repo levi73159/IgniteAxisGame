@@ -1,29 +1,65 @@
 {
-    "name": "Playground",
-    "objects": [
-        {
-            "name": "Ground",
-            "tag": "Ground",
-            "vertices": { "predefine": "Square" },
-            "x": 0,
-            "y": 550,
-            "w": 1000,
-            "h": 50,
-            "color": "#12FF12",
-            "texture": "square",
-            "shader": null
-        },
-        {
-            "name": "Platform1",
-            "tag": "Platform",
-            "vertices": { "clone": 0 },
-            "x": 250,
-            "y": 350,
-            "w": 250,
-            "h": 250,
-            "color": "blue",
-            "texture": "square",
-            "shader": null
+  "name": "Playground",
+  "objects": [
+    {
+      "name": "Ground",
+      "tag": "Ground",
+      "vertices": {
+        "vertices": {
+            "vertices": [
+                0, 0, 0, 0,
+                1, 0, 3.5, 0,
+                1, 1, 3.5, 1,
+                0, 1, 0, 1
+            ],
+            "indi": [ 0, 1, 2, 2, 3, 0 ],
+            "layout": null
         }
-    ]
+      },
+      "x": 0,
+      "y": 175,
+      "w": 350,
+      "h": 25,
+      "color": "white",
+      "texture": "create",
+      "shader": null
+    },
+    {
+      "name": "Platform1",
+      "tag": "Platform",
+      "vertices": {
+        "vertices": {
+            "vertices": [
+                0, 0, 0, 0,
+                1, 0, 2, 0,
+                1, 1, 2, 1,
+                0, 1, 0, 1
+            ],
+            "indi": [ 0, 1, 2, 2, 3, 0 ],
+            "layout": null
+        }
+      },
+      "x": 50,
+      "y": 80,
+      "w": 75,
+      "h": 25,
+      "color": "white",
+      "texture": "metal",
+      "shader": null
+    },
+    {
+      "name": "Platform2",
+      "tag": "Platform",
+      "vertices": {
+        "clone": 1
+      },
+      "x": 0,
+      "y": 0,
+      "w": 25,
+      "h": 25,
+      "color": "white",
+      "texture": "metal",
+      "shader": null
+    }
+  ]
 }

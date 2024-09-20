@@ -15,12 +15,23 @@ const Action = enum(u2) {
     repeat = 2,
 };
 
+pub const CallbackFuncT = *fn(key: Key, action: Action) void;
+var callback: ?CallbackFuncT = null; // right now we have one function that get call at everthing, were gonna eventually make that 25 or so
+
 fn inputCallback(_: glfw.Window, key: Key, _: i32, action: glfw.Action, _: glfw.Mods) void {
+    const prev = keys.get(key);
     keys.set(key, switch (action) {
         .release => Action.release,
-        .press => if(keys.get(key) == .press) Action.repeat else Action.press,
+        .press => if (prev == Action.press) Action.repeat else Action.press,
         .repeat => Action.repeat,
     });
+    if (callback) |cb| {
+        cb(key, keys.get(key));
+    }
+}
+
+pub fn setInputCallback(callback_function: CallbackFuncT) void {
+    callback = callback_function;
 }
 
 pub fn init(win: *const Window) void {

@@ -43,7 +43,7 @@ pub fn create(allocator: Allocator, title: [*:0]const u8, size: app.Size) !Self 
 
 pub fn getProjectionMatrix(self: Self) za.Mat4 {
     const window_size = self.getSize();
-    return za.orthographic(0, @floatFromInt(window_size.width), @floatFromInt(window_size.height), 0, -1, 1);
+    return za.orthographic(0, @as(f32, @floatFromInt(window_size.width)), @as(f32, @floatFromInt(window_size.height)), 0, -1, 1);
 }
 
 pub fn setDefaultShader(self: *Self, name: []const u8) void {
