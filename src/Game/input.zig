@@ -19,10 +19,10 @@ pub const CallbackFuncT = *fn(key: Key, action: Action) void;
 var callback: ?CallbackFuncT = null; // right now we have one function that get call at everthing, were gonna eventually make that 25 or so
 
 fn inputCallback(_: glfw.Window, key: Key, _: i32, action: glfw.Action, _: glfw.Mods) void {
-    const prev = keys.get(key);
+    // const prev = keys.get(key);
     keys.set(key, switch (action) {
         .release => Action.release,
-        .press => if (prev == Action.press) Action.repeat else Action.press,
+        .press => Action.press,
         .repeat => Action.repeat,
     });
     if (callback) |cb| {
@@ -39,6 +39,10 @@ pub fn init(win: *const Window) void {
     win.contex.setKeyCallback(inputCallback);
 }
 
+/// notice this function doesn't allways work when a key is press, it might be press and held down but still will return true
+/// this because a key intrupts a key that press
+/// 
+/// in order to fix this, monitor the key state, in your code, make a variable keeping track of your last code of the state
 pub fn keyDown(key: Key) bool {
     return keys.get(key) == .press;
 }

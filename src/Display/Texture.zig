@@ -9,7 +9,10 @@ const Self = @This();
 renderer_id: u32,
 filepath: []const u8,
 slot: u32,
-// image: Image, // Right now we do not want to store the image
+
+// usefull info we will probably need
+width: usize,
+height: usize,
 
 pub fn init(allocator: std.mem.Allocator, path: []const u8, slot: u32) !Self {
     return initParameters(allocator, path, slot, .clamp_to_edge, .clamp_to_edge);
@@ -35,6 +38,8 @@ pub fn initParameters(allocator: std.mem.Allocator, path: []const u8, slot: u32,
         .renderer_id = @intFromEnum(texture_id),
         .filepath = path,
         .slot = slot,
+        .width = image.width,
+        .height = image.height,
     };
 }
 
