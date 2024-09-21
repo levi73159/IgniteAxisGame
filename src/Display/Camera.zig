@@ -3,21 +3,36 @@ const za = @import("zalgebra");
 const Self = @This();
 
 postion: za.Vec2,
-zoom: f32 = 1,
+zoom: f32,
 
-pub fn init(postion: za.Vec2, zoom: f32) Self {
-    return Self{ .postion = postion, .zoom = zoom };
+/// should never be motify, only by the window when it resizes
+///
+/// this holds the window viewport in it, if you want to get the camera viewport use `cam.viewport()`
+_viewport: za.Vec2,
+
+pub fn init(postion: za.Vec2, zoom: f32, window_viewport: za.Vec2) Self {
+    return Self{ .postion = postion, .zoom = zoom, ._viewport = window_viewport };
 }
 
-pub fn initDefault() Self {
-    return Self{ .postion = za.Vec2.zero(), .zoom = 1 };
+pub fn initDefault(window_viewport: za.Vec2) Self {
+    return Self{ .postion = za.Vec2.zero(), .zoom = 1, ._viewport = window_viewport };
+}
+
+pub fn viewport(self: Self) za.Vec2 {
+    return self._viewport.mul(za.Vec2.new(1 / self.zoom, 1 / self.zoom));
 }
 
 /// return the transoform matrix
 pub fn getTransform(self: Self) za.Mat4 {
-    return za.Mat4.identity().scale(za.Vec3.new(self.zoom, self.zoom, 0)).translate(self.postion.toVec3(0).negate());
+    return za.Mat4.identity().translate(self.postion.toVec3(0).negate()).scale(za.Vec3.new(self.zoom, self.zoom, 0));
 }
 
 pub fn translate(self: *Self, other: za.Vec2) void {
-    self.postion.add(other);
+    self.postion = self.postion.add(other);
+}
+
+pub fn focuos(self: *Self, point: za.Vec2) void {
+    const cam_vp = self.viewport();
+    self.postion = point; // set the point to be top left now move the point in the center of screen
+    self.translate(cam_vp.mul(za.Vec2.new(-0.5, -0.5)));
 }

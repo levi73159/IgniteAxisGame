@@ -53,7 +53,7 @@ pub fn main() !void {
     };
 
     // Initialize game
-    var game = try Game.init(window, Game.Camera.initDefault(), &[_]Game.Scene{
+    var game = try Game.init(window, Game.Camera.initDefault(za.Vec2.new(window_width, window_height)), &[_]Game.Scene{
         try Game.Scene.fromFile(allocator, "Main", .{ .square = textures[0], .create = textures[2], .metal = textures[3] }),
     });
     defer game.deinit();
@@ -84,6 +84,8 @@ pub fn main() !void {
 
         player.update(dt);
         player.collison(platforms, dt);
+
+        game.mainCam.focuos(player.game_object.position().*);
 
         game.render();
     }
