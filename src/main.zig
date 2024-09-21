@@ -52,10 +52,6 @@ pub fn main() !void {
         texture.deinit();
     };
 
-    for (textures) |texture| {
-        texture.bind();
-    }
-
     // Initialize game
     var game = try Game.init(window, Game.Camera.initDefault(), &[_]Game.Scene{
         try Game.Scene.fromFile(allocator, "Main", .{ .square = textures[0], .create = textures[2], .metal = textures[3] }),

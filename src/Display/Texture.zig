@@ -24,7 +24,7 @@ pub fn initParameters(allocator: std.mem.Allocator, path: []const u8, slot: u32,
 
     const texture_id = gl.genTexture();
     gl.activeTexture(gl.TextureUnit.unit(slot));
-    gl.bindTexture(texture_id, .@"2d");
+    gl.bindTexture(texture_id, .@"2d"); // and never unbinding
 
     gl.textureParameter(texture_id, .min_filter, gl.TextureParameterType(.min_filter).nearest);
     gl.textureParameter(texture_id, .mag_filter, gl.TextureParameterType(.mag_filter).nearest);
