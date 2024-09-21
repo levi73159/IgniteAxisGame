@@ -42,7 +42,7 @@ pub fn main() !void {
     app.setVsync(true);
 
     // Initialize textures
-    const textures = [_]Texture.Texture{
+    const textures = [_]Texture{
         try Texture.init(allocator, "res/white.png", 0),
         try Texture.init(allocator, "res/Player.png", 1),
         try Texture.initParameters(allocator, "res/Creates.png", 2, .repeat, .repeat),
@@ -51,10 +51,6 @@ pub fn main() !void {
     defer for (textures) |texture| {
         texture.deinit();
     };
-
-    for (textures) |texture| {
-        texture.bind();
-    }
 
     // Initialize game
     var game = try Game.init(window, Game.Camera.initDefault(), &[_]Game.Scene{

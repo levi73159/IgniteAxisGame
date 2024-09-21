@@ -78,17 +78,17 @@ pub fn collison(self: *Self, obsticals: []const GameObject, dt: f32) void {
             const obstPos = obstical.position();
             const obstScale = obstical.scale();
 
-            if (objPos.y + objScale.y - offsetY < obstPos.y) {
-                objPos.yMut().* = obstPos.y - objScale.y;
+            if (objPos.y() + objScale.y() - offsetY < obstPos.y()) {
+                objPos.yMut().* = obstPos.y() - objScale.y();
                 self.is_grounded = true;
-            } else if (objPos.y + offsetY > obstPos.y + obstScale.y) {
-                objPos.yMut().* = obstPos.y + obstScale.y;
+            } else if (objPos.y() + offsetY > obstPos.y() + obstScale.y()) {
+                objPos.yMut().* = obstPos.y() + obstScale.y();
                 if (self.velocity.y() < 0) self.velocity.yMut().* = 2;
-            } else if (objPos.x + objScale.x - offsetX < obstPos.x) {
-                objPos.xMut().* = obstPos.x - objScale.x - 0.2;
+            } else if (objPos.x() + objScale.x() - offsetX < obstPos.x()) {
+                objPos.xMut().* = obstPos.x() - objScale.x() - 0.2;
                 self.velocity.xMut().* = 0;
-            } else if (objPos.x + offsetX > obstPos.x + obstScale.x) {
-                objPos.xMut().* = obstPos.x + obstScale.x + 0.2;
+            } else if (objPos.x() + offsetX > obstPos.x() + obstScale.x()) {
+                objPos.xMut().* = obstPos.x() + obstScale.x() + 0.2;
                 self.velocity.xMut().* = 0;
             }
         }
