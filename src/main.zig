@@ -108,7 +108,7 @@ pub fn main() !void {
         const bottom_of_ground = platforms[0].internal.postion.y() + platforms[0].internal.scale.y();
 
         const focus_point = player.game_object.position().add(player.velocity.scale(0.1));
-        game.mainCam.focusSmooth(focus_point, (@abs(player.velocity.x()) * 2 + 50) * dt);
+        game.mainCam.focusSmooth(focus_point, (@abs(player.velocity.x()) + 50) * dt);
         game.mainCam.postion.yMut().* = std.math.clamp(game.mainCam.postion.y(), 0, bottom_of_ground - game.mainCam.viewport().y());
 
         game.render();
