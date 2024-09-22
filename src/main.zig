@@ -2,6 +2,7 @@ const std = @import("std");
 const glfw = @import("glfw");
 const gl = @import("gl");
 const app = @import("app.zig");
+const math = @import("math.zig");
 
 const Game = @import("Game/Game.zig");
 const Player = @import("Game/Player.zig");
@@ -47,6 +48,7 @@ pub fn main() !void {
         try Texture.init(allocator, "res/Player.png", 1),
         try Texture.initParameters(allocator, "res/Creates.png", 2, .repeat, .repeat),
         try Texture.initParameters(allocator, "res/Metal.png", 3, .repeat, .repeat),
+        try Texture.init(allocator, "res/FlagPole.png", 4),
     };
     defer for (textures) |texture| {
         texture.deinit();
@@ -54,7 +56,7 @@ pub fn main() !void {
 
     // Initialize game
     var game = try Game.init(window, Game.Camera.initDefault(za.Vec2.new(window_width, window_height)), &[_]Game.Scene{
-        try Game.Scene.fromFile(allocator, "Main", .{ .square = textures[0], .create = textures[2], .metal = textures[3] }),
+        try Game.Scene.fromFile(allocator, "Main", .{ .square = textures[0], .create = textures[2], .metal = textures[3], .pole = textures[4] }),
     });
     defer game.deinit();
     game.mainCam.zoom = 3;
@@ -63,12 +65,20 @@ pub fn main() !void {
     var player =
         try Player.initDefault(&window.renderer, za.Vec2.zero(), gravity, textures[1]);
 
+    game.mainCam.focus(player.game_object.position().*);
+
     // Get platforms
     const platforms = try game.getObjectTagAlloc(allocator, "Platform");
     defer allocator.free(platforms);
 
+    const win_pole = game.getObject("Win");
+    if (win_pole == null) {
+        std.log.warn("No Win Pole: can't find object \"Win\"", .{});
+    }
+
     // Game loop
     var timer = try std.time.Timer.start();
+    var has_win = false;
     while (!window.shouldClose()) {
         game.update();
 
@@ -82,10 +92,24 @@ pub fn main() !void {
             break :blk dt;
         };
 
-        player.update(dt);
-        player.collison(platforms, dt);
+        if (!has_win) {
+            player.update(dt);
+            player.collison(platforms, dt);
+        }
 
-        game.mainCam.focuos(player.game_object.position().*);
+        if (win_pole) |win_area| {
+            if (!has_win and player.isColliding(win_area)) {
+                player.game_object.destroy();
+                has_win = true;
+            }
+        }
+
+        // focuos then clamp the bottom of the cam viewport to the ground end
+        const bottom_of_ground = platforms[0].internal.postion.y() + platforms[0].internal.scale.y();
+
+        const focus_point = player.game_object.position().add(player.velocity.scale(0.1));
+        game.mainCam.focusSmooth(focus_point, (@abs(player.velocity.x()) * 2 + 50) * dt);
+        game.mainCam.postion.yMut().* = std.math.clamp(game.mainCam.postion.y(), 0, bottom_of_ground - game.mainCam.viewport().y());
 
         game.render();
     }

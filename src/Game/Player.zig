@@ -69,7 +69,7 @@ pub fn collison(self: *Self, obsticals: []const GameObject, dt: f32) void {
 
     // then check collison
     for (obsticals) |obstical| {
-        if (self.game_object.checkCollison(obstical)) {
+        if (self.game_object.isColliding(obstical)) {
             const offsetX: f32 = @abs(self.velocity.x()) * 2 * dt;
             const offsetY: f32 = @abs(self.velocity.y()) * 2 * dt;
 
@@ -94,3 +94,5 @@ pub fn collison(self: *Self, obsticals: []const GameObject, dt: f32) void {
         }
     }
 }
+
+pub inline fn isColliding(self: Self, other: GameObject) bool { return self.game_object.isColliding(other); }

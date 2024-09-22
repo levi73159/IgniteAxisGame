@@ -102,7 +102,7 @@ pub fn setTexture(self: *Self, texture: Texture) void {
     self.update();
 }
 
-pub fn checkCollison(self: Self, other: Self) bool {
+pub fn isColliding(self: Self, other: Self) bool {
     // check if one object is to the left of the other
     if (self.position().x() + self.scale().x() < other.position().x() or
         other.position().x() + other.scale().x() < self.position().x())
@@ -112,6 +112,6 @@ pub fn checkCollison(self: Self, other: Self) bool {
     if (self.position().y() + self.scale().y() < other.position().y() or
         other.position().y() + other.scale().y() < self.position().y())
         return false;
-    
+
     return true;
 }

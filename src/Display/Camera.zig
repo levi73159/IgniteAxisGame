@@ -1,4 +1,5 @@
 const za = @import("zalgebra");
+const math = @import("../math.zig");
 
 const Self = @This();
 
@@ -31,8 +32,17 @@ pub fn translate(self: *Self, other: za.Vec2) void {
     self.postion = self.postion.add(other);
 }
 
-pub fn focuos(self: *Self, point: za.Vec2) void {
+pub fn focus(self: *Self, point: za.Vec2) void {
     const cam_vp = self.viewport();
     self.postion = point; // set the point to be top left now move the point in the center of screen
-    self.translate(cam_vp.mul(za.Vec2.new(-0.5, -0.5)));
+    self.translate(cam_vp.scale(-0.5));
+}
+
+pub fn focusSmooth(self: *Self, point: za.Vec2, step: f32) void {
+    const cam_vp = self.viewport();
+    const p = point.add(cam_vp.scale(-0.5)); // set the point to be top left now move the point in the center of screen
+
+    const x = math.moveToward(self.postion.x(), p.x(), step);
+    const y = math.moveToward(self.postion.y(), p.y(), step);
+    self.postion = za.Vec2.new(x, y);
 }

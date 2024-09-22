@@ -126,7 +126,7 @@ pub fn fromFile(allocator: std.mem.Allocator, filename: []const u8, args: anytyp
 
         switch (data.vertices) {
             .predefine => |object| {
-                if (std.mem.eql(u8, object, "Square")) {
+                if (std.ascii.eqlIgnoreCase(object, "Square")) {
                     // zig fmt: off
                     objects[i] = SceneObject.initSquare(
                         data.name, data.tag,
