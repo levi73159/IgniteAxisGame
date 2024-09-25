@@ -48,7 +48,7 @@ pub fn start(self: *Self) !void {
     self.callEvent(self.start_event);
 
     // now load scene zero
-    try self.loadSceneWithoutUnload(0);
+    try self.loadSceneWithoutUnload(self.current_scene_index);
 
     const dt_low_limit: f32 = 1.0 / 90.0; // 90 fps
     const dt_high_limit: f32 = 1.0 / 10.0; // 10 fps
@@ -151,7 +151,7 @@ pub fn render(self: *const Self) void {
 }
 
 pub fn load(self: *Self, index: usize) !void {
-    if (self.current_scene_index == index) return; // avoid unecry loads
+    // if (self.current_scene_index == index) return; // avoid unecry loads
 
     self.callEvent(self.unload_event);
     self.currentScene().unload();

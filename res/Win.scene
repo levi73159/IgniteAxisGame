@@ -1,19 +1,117 @@
 {
-  "name": "Victory",
+  "name": "Playground",
   "objects": [
     {
-        "name": "Background",
-        "tag": "background",
+      "name": "Ground",
+      "tag": "Platform",
+      "vertices": {
         "vertices": {
-            "predefine": "Square"
-        },
-        "x": -500,
-        "y": -500,
-        "w": 1000,
-        "h": 1000,
-        "color": "green",
-        "texture": "square",
-        "shader": null
+          "vertices": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            20,
+            0,
+            1,
+            1,
+            20,
+            1,
+            0,
+            1,
+            0,
+            1
+          ],
+          "indi": [
+            0,
+            1,
+            2,
+            2,
+            3,
+            0
+          ],
+          "layout": null
+        }
+      },
+      "x": -500,
+      "y": 175,
+      "w": 1000,
+      "h": 25,
+      "color": "white",
+      "texture": "create",
+      "shader": null
+    },
+    {
+      "name": "Platform1",
+      "tag": "Platform",
+      "vertices": {
+        "vertices": {
+          "vertices": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            4,
+            0,
+            1,
+            1,
+            4,
+            1,
+            0,
+            1,
+            0,
+            1
+          ],
+          "indi": [
+            0,
+            1,
+            2,
+            2,
+            3,
+            0
+          ],
+          "layout": null
+        }
+      },
+      "x": 50,
+      "y": 100,
+      "w": 25,
+      "h": 25,
+      "color": "white",
+      "texture": "metal",
+      "shader": null
+    },
+    {
+      "name": "Platform2",
+      "tag": "Platform",
+      "vertices": {
+        "clone": 1
+      },
+      "x": 200,
+      "y": 50,
+      "w": 100,
+      "h": 25,
+      "color": "white",
+      "texture": "metal",
+      "shader": null
+    },
+    {
+      "name": "Win",
+      "tag": "Win",
+      "vertices": {
+        "predefine": "Square"
+      },
+      "x": 250,
+      "y": 10,
+      "w": 16,
+      "h": 40,
+      "color": "white",
+      "texture": "pole",
+      "shader": null
     }
   ]
 }

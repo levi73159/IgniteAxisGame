@@ -40,7 +40,6 @@ pub fn onUnload(_: *Game, _: f32) anyerror!void {
 }
 
 pub fn onUpdate(game: *Game, dt: f32) anyerror!void {
-    if (game.current_scene_index == 1) return;
     
     player.update(dt);
     player.collison(platforms, dt);
