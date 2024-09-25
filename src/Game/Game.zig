@@ -155,7 +155,7 @@ pub fn load(self: *Self, index: usize) !void {
 
     self.callEvent(self.unload_event);
     self.currentScene().unload();
-    self.loadSceneWithoutUnload(index);
+    try self.loadSceneWithoutUnload(index);
 }
 
 fn loadSceneWithoutUnload(self: *Self, index: usize) !void {

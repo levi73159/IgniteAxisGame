@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "vertices": {
+            "type": "object",
+            "properties": {
+              "vertices": {
+                "type": "object",
+                "properties": {
+                  "vertices": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "indi": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "layout": {
+                    "type": ["string", "null"]
+                  }
+                },
+                "required": ["vertices", "indi", "layout"]
+              },
+              "clone": {
+                "type": "integer"
+              },
+              "predefine": {
+                "type": "string",
+                "enum": ["Square"]
+              }
+            }
+          },
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          },
+          "w": {
+            "type": "number"
+          },
+          "h": {
+            "type": "number"
+          },
+          "color": {
+            "type": "string"
+          },
+          "texture": {
+            "type": "string"
+          },
+          "shader": {
+            "type": ["string", "null"]
+          }
+        },
+        "required": [
+          "name",
+          "tag",
+          "vertices",
+          "x",
+          "y",
+          "w",
+          "h",
+          "color",
+          "texture",
+          "shader"
+        ]
+      }
+    }
+  },
+  "required": ["name", "objects"]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "Victory",
+  "objects": [
+    {
+        "name": "Background",
+        "tag": "background",
+        "vertices": {
+            "predefine": "Square"
+        },
+        "x": -500,
+        "y": -500,
+        "w": 1000,
+        "h": 1000,
+        "color": "green",
+        "texture": "square",
+        "shader": null
+    }
+  ]
+}
