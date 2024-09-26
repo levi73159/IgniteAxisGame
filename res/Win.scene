@@ -100,6 +100,20 @@
       "shader": null
     },
     {
+      "name": "Spikes",
+      "tag": "Death",
+      "vertices": {
+        "predefine": "Square"
+      },
+      "x": 210,
+      "y": 44,
+      "w": 31,
+      "h": 6,
+      "color": "white",
+      "texture": "spikes",
+      "shader": null
+    },
+    {
       "name": "Win",
       "tag": "Win",
       "vertices": {

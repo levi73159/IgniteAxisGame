@@ -234,5 +234,7 @@ pub fn currentScene(self: *const Self) *Scene {
 }
 
 pub fn reload(self: *Self) !void {
+    self.callEvent(self.unload_event);
     try self.scenes.items[self.current_scene_index].reload(&self.window.renderer);
+    self.callEvent(self.load_event);
 }

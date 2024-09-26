@@ -3,13 +3,16 @@ const app = @import("app.zig");
 const std = @import("std");
 const Game = @import("Game/Game.zig");
 const Texture = @import("Display/Texture.zig");
+
 const Player = @import("Game/Player.zig");
+
 const Scene = Game.Scene;
 
 const gravity: f32 = 723.19;
 
 var player: Player = undefined; // should get loaded in at load
 var platforms: []Game.GameObject = undefined;
+var spikes: []Game.GameObject = undefined;
 var win_pole: ?Game.GameObject = null;
 
 pub fn onStart(game: *Game, _: f32) anyerror!void {
@@ -25,9 +28,12 @@ pub fn onLoad(game: *Game, _: f32) anyerror!void {
     const allocator = app.allocator();
 
     player.game_object.position().* = za.Vec2.zero();
+    player.velocity = za.Vec2.zero();
+
     game.mainCam.focus(player.game_object.position().*);
 
     platforms = try game.getObjectTagAlloc(allocator, "Platform");
+    spikes = try game.getObjectTagAlloc(allocator, "Death");
 
     win_pole = game.getObject("Win");
     if (win_pole == null) {
@@ -37,16 +43,24 @@ pub fn onLoad(game: *Game, _: f32) anyerror!void {
 
 pub fn onUnload(_: *Game, _: f32) anyerror!void {
     app.allocator().free(platforms);
+    app.allocator().free(spikes);
 }
 
 pub fn onUpdate(game: *Game, dt: f32) anyerror!void {
-    
     player.update(dt);
     player.collison(platforms, dt);
 
     if (win_pole) |win_area| {
         if (player.isColliding(win_area)) {
             try game.load(1);
+            return;
+        }
+    }
+
+    // check if we should die
+    for (spikes) |spike| {
+        if (player.isColliding(spike)) {
+            try game.reload();
             return;
         }
     }

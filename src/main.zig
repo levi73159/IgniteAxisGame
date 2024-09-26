@@ -24,7 +24,7 @@ pub fn main() !void {
     app.init() catch |err| switch (err) {
         error.AlreadyInit => unreachable,
         error.GLFWInit => {
-            std.log.err("Failed to init glfw: {?s}", .{glfw.getErrorString()});
+            std.log.err("Failed to init glfw app: {?s}", .{glfw.getErrorString()});
             std.process.exit(1);
         },
     };
@@ -59,14 +59,20 @@ pub fn main() !void {
         try Texture.initParameters(allocator, "res/Creates.png", 2, .repeat, .repeat),
         try Texture.initParameters(allocator, "res/Metal.png", 3, .repeat, .repeat),
         try Texture.init(allocator, "res/FlagPole.png", 4),
+        try Texture.init(allocator, "res/Spikes.png", 5),
     };
     defer for (textures) |texture| {
         texture.deinit();
     };
 
     // Initialize game
-    var game = try Game.init(window, Game.Camera.initDefault(za.Vec2.new(window_width, window_height)), &[_]Game.Scene{ try Game.Scene.fromFile(allocator, "Main", .{ .square = textures[0], .create = textures[2], .metal = textures[3], .pole = textures[4] }), try Game.Scene.fromFile(allocator, "Win", .{ .square = textures[0], .create = textures[2], .metal = textures[3], .pole = textures[4] }) });
+    // zig fmt: off
+    var game = try Game.init(window, Game.Camera.initDefault(za.Vec2.new(window_width, window_height)), &[_]Game.Scene{ 
+        try Game.Scene.fromFile(allocator, "Main", .{ .square = textures[0], .create = textures[2], .metal = textures[3], .pole = textures[4] }), 
+        try Game.Scene.fromFile(allocator, "Win", .{ .square = textures[0], .create = textures[2], .metal = textures[3], .pole = textures[4], .spikes = textures[5] }) 
+    });
     defer game.deinit();
+    // zig fmt: on
     game.mainCam.zoom = 3;
     game.current_scene_index = start_scene; // gonna start at start_scene
 

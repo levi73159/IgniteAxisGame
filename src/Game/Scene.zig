@@ -210,7 +210,7 @@ pub fn unload(self: *Self) void {
 pub fn reload(self: *Self, renderer: *Renderer) !void {
     for (self.objects) |*obj| {
         obj.unload();
-        try obj.load(renderer);
+        try obj.load(renderer, self.objects);
     }
 }
 
