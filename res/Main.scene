@@ -40,7 +40,7 @@
       "w": 1000,
       "h": 25,
       "color": "white",
-      "texture": "create",
+      "texture": "res/Creates.png",
       "shader": null
     },
     {
@@ -82,7 +82,7 @@
       "w": 100,
       "h": 25,
       "color": "white",
-      "texture": "metal",
+      "texture": "res/Metal.png",
       "shader": null
     },
     {
@@ -96,7 +96,7 @@
       "w": 100,
       "h": 25,
       "color": "white",
-      "texture": "metal",
+      "texture": "res/Metal.png",
       "shader": null
     },
     {
@@ -110,7 +110,7 @@
       "w": 16,
       "h": 40,
       "color": "white",
-      "texture": "pole",
+      "texture": "res/FlagPole.png",
       "shader": null
     }
   ]

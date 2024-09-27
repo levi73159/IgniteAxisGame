@@ -16,12 +16,12 @@ var spikes: []Game.GameObject = undefined;
 var win_pole: ?Game.GameObject = null;
 
 pub fn onStart(game: *Game, _: f32) anyerror!void {
-    const player_texture = try Texture.init(app.allocator(), "res/Player.png", 1);
+    const player_texture = try Texture.init(app.allocator(), "res/Player.png");
     player = try Player.initDefault(&game.window.renderer, za.Vec2.zero(), gravity, player_texture);
 }
 
 pub fn onExit(_: *Game, _: f32) anyerror!void {
-    player.game_object.texture.deinit();
+    player.game_object.texture.deinit(app.allocator());
 }
 
 pub fn onLoad(game: *Game, _: f32) anyerror!void {

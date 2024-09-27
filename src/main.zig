@@ -52,26 +52,13 @@ pub fn main() !void {
     window.background_color = app.Color.colorF(0.2, 0.4, 0.5);
     app.setVsync(true);
 
-    // Initialize textures
-    const textures = [_]Texture{
-        try Texture.init(allocator, "res/white.png", 0),
-        try Texture.init(allocator, "res/Player.png", 1), // fix unuse
-        try Texture.initParameters(allocator, "res/Creates.png", 2, .repeat, .repeat),
-        try Texture.initParameters(allocator, "res/Metal.png", 3, .repeat, .repeat),
-        try Texture.init(allocator, "res/FlagPole.png", 4),
-        try Texture.init(allocator, "res/Spikes.png", 5),
-    };
-    defer for (textures) |texture| {
-        texture.deinit();
-    };
-
     // Initialize game
     // zig fmt: off
     var game = try Game.init(window, Game.Camera.initDefault(za.Vec2.new(window_width, window_height)), &[_]Game.Scene{ 
-        try Game.Scene.fromFile(allocator, "Main", .{ .square = textures[0], .create = textures[2], .metal = textures[3], .pole = textures[4] }), 
-        try Game.Scene.fromFile(allocator, "Win", .{ .square = textures[0], .create = textures[2], .metal = textures[3], .pole = textures[4], .spikes = textures[5] }) 
+        try Game.Scene.fromFile(allocator, "Main", .{})
     });
     defer game.deinit();
+
     // zig fmt: on
     game.mainCam.zoom = 3;
     game.current_scene_index = start_scene; // gonna start at start_scene

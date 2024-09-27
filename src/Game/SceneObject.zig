@@ -145,7 +145,7 @@ pub fn unload(self: *Self) void {
     }
 }
 
-pub fn deinit(self: *const Self) void {
+pub fn deinit(self: Self) void {
     const allocator = app.allocator();
     if (self.data == .raw_data) {
         allocator.free(self.data.raw_data.vertices);
@@ -153,4 +153,6 @@ pub fn deinit(self: *const Self) void {
     }
     allocator.free(self.name);
     allocator.free(self.tag);
+
+    self.texture.deinit(allocator);
 }

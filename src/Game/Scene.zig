@@ -81,6 +81,8 @@ pub fn fromFile(allocator: std.mem.Allocator, filename: []const u8, args: anytyp
     defer scene_data.deinit();
 
     var objects: [256]SceneObject = undefined;
+    var texturesMapping = std.StringHashMap(Texture).init(allocator);
+    defer texturesMapping.deinit();
 
     for (scene_data.value.objects, 0..) |data, i| {
         const color: Color = blk: {
@@ -104,13 +106,10 @@ pub fn fromFile(allocator: std.mem.Allocator, filename: []const u8, args: anytyp
             break :blk Color.colorRGB(255, 155, 155);
         };
 
-        var texture: ?Texture = null;
         var shader: ?Shader = null;
         var layout: ?Object.Layout = null; // can be null and will be null and null is default
         inline for (args_fields) |field| {
-            if (field.type == Texture and std.mem.eql(u8, data.texture, field.name)) {
-                texture = @field(args, field.name);
-            } else if (data.shader != null and field.type == Shader and std.mem.eql(u8, data.shader.?, field.name)) {
+            if (data.shader != null and field.type == Shader and std.mem.eql(u8, data.shader.?, field.name)) {
                 shader = @field(args, field.name);
             } else if (field.type == Object.Layout) {
                 if (data.vertices == .existing and data.vertices.existing.layout != null and std.mem.eql(u8, data.vertices.existing.layout.?, field.name)) {
@@ -121,8 +120,14 @@ pub fn fromFile(allocator: std.mem.Allocator, filename: []const u8, args: anytyp
             }
         }
 
-        if (texture == null) return error.TextureNotFound;
         if (data.shader != null and shader == null) return error.ShaderNotFound;
+
+        // get or use texture
+        const texture_result = try texturesMapping.getOrPut(data.texture);
+        if (!texture_result.found_existing) {
+            texture_result.value_ptr.* = try Texture.init(allocator, data.texture);
+        }
+        texture_result.value_ptr.uses.* += 1;
 
         switch (data.vertices) {
             .predefine => |object| {
@@ -133,7 +138,7 @@ pub fn fromFile(allocator: std.mem.Allocator, filename: []const u8, args: anytyp
                         za.Vec2.new(data.x, data.y), 
                         za.Vec2.new(data.w, data.h), 
                         color, 
-                        texture.?, 
+                        texture_result.value_ptr.*, 
                         shader
                     );
                     // zig fmt: on
@@ -147,7 +152,7 @@ pub fn fromFile(allocator: std.mem.Allocator, filename: []const u8, args: anytyp
                         za.Vec2.new(data.x, data.y), 
                         za.Vec2.new(data.w, data.h), 
                         color, 
-                        texture.?, 
+                        texture_result.value_ptr.*, 
                         index
                     );
                 // zig fmt: on
@@ -158,7 +163,7 @@ pub fn fromFile(allocator: std.mem.Allocator, filename: []const u8, args: anytyp
                         za.Vec2.new(data.x, data.y), 
                         za.Vec2.new(data.w, data.h), 
                         color, 
-                        texture.?, 
+                        texture_result.value_ptr.*, 
                         existing.buffer_id,
                         shader,
                         layout orelse app.defaultLayout().*
@@ -171,7 +176,7 @@ pub fn fromFile(allocator: std.mem.Allocator, filename: []const u8, args: anytyp
                         za.Vec2.new(data.x, data.y), 
                         za.Vec2.new(data.w, data.h), 
                         color, 
-                        texture.?, 
+                        texture_result.value_ptr.* , 
                         shader,
                         vertsInfo.vertices,
                         vertsInfo.indi,
