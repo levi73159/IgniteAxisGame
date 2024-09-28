@@ -1,5 +1,12 @@
 const std = @import("std");
 
+const IgniteAxisVersion: std.SemanticVersion = .{
+    .build = "IgniteAxis",
+    .major = 1,
+    .minor = 0,
+    .patch = 0,
+};
+
 // Although this function looks imperative, note that its job is to
 // declaratively construct a build graph that will be executed by an external
 // runner.
@@ -16,6 +23,8 @@ pub fn build(b: *std.Build) void {
     // set a preferred release mode, allowing the user to decide how to optimize.
     const optimize = b.standardOptimizeOption(.{});
 
+    // create game engine libary
+
     const exe = b.addExecutable(.{
         .name = "Game",
         .root_source_file = b.path("src/main.zig"),
@@ -23,29 +32,12 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const zgl = b.dependency("zgl", .{
+    const ignite = b.dependency("IgniteAxis", .{
         .target = target,
         .optimize = optimize,
     });
-    exe.root_module.addImport("gl", zgl.module("zgl"));
+    exe.root_module.addImport("ignite-axis", ignite.module("ignite-axis"));
 
-    const mach_glfw = b.dependency("mach-glfw", .{
-        .target = target,
-        .optimize = optimize,
-    });
-    exe.root_module.addImport("glfw", mach_glfw.module("mach-glfw"));
-
-    const zigimg = b.dependency("zigimg", .{
-        .target = target,
-        .optimize = optimize
-    });
-    exe.root_module.addImport("zigimg", zigimg.module("zigimg"));
-
-    const zalgebra = b.dependency("zalgebra", .{
-        .target = target,
-        .optimize = optimize
-    });
-    exe.root_module.addImport("zalgebra", zalgebra.module("zalgebra"));
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default

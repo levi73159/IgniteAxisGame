@@ -6,7 +6,7 @@
     //
     // It is redundant to include "zig" in this name because it is already
     // within the Zig package namespace.
-    .name = "GameGame",
+    .name = "IgniteAxisGame",
 
     // This is a [Semantic Version](https://semver.org/).
     // In a future version of Zig it will be used for package deduplication.
@@ -23,31 +23,18 @@
     // Once all dependencies are fetched, `zig build` no longer requires
     // internet connectivity.
     .dependencies = .{
-        .@"mach-glfw" = .{
-            .url = "https://github.com/slimsag/mach-glfw/archive/fb4ae48540454270ab969c8c645bbc6eff3c2dfb.tar.gz",
-            .hash = "12201ae68707aefe54ffb9d8c64721d4a2ac36186f8bd390e4f670033fec6737664a",
-        },
-        .zgl = .{
-            .url = "https://github.com/ziglibs/zgl/archive/e483862224a536d9ab409cd127a418f198b52ab3.tar.gz",
-            .hash = "122059f1b282209c57cc374baff46ab0498c422c271ec6960d18f8f769195f993df5",
-        },
-        .zalgebra = .{
-            .url = "https://github.com/glyh/zalgebra/archive/9b76b8d5351f92426010994f0ba2f85f12197e39.tar.gz",
-            .hash = "12200e1b17e15217623e36563e459164fff4debb8210ea9d027d8548aca6d30f0811",
-        },
-        // .mach_freetype = .{
-        //     .url = "https://github.com/hexops/mach-freetype/archive/86fc8024d4ddd53df75dfa4f3ad4eebe0b1b4284.tar.gz",
-        //     .hash = "12206251ed342f400b80abf3c338521f5d8c83eb596899abf77a2afe0cfd46e61ff0",
-        // },
-        .zigimg = .{
-            .url = "https://github.com/zigimg/zigimg/archive/d9dbbe2.tar.gz",
-            .hash = "122013646f7038ecc71ddf8a0d7de346d29a6ec40140af57f838b0a975c69af512b0",
+        .IgniteAxis = .{
+            // use zig fetch --save commit archive or somthings
+            // im not that good with this
+            // look it up
+            .path = "../IgniteAxis"
         },
     },
     .paths = .{
         "build.zig",
         "build.zig.zon",
         "src",
+        "res",
         ".gitignore",
         // For example...
         //"LICENSE",

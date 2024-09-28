@@ -1,17 +1,7 @@
 const std = @import("std");
-const glfw = @import("glfw");
-const gl = @import("gl");
-const app = @import("app.zig");
-const math = @import("math.zig");
+const ia = @import("ignite-axis");
 
-const Game = @import("Game/Game.zig");
-const Player = @import("Game/Player.zig");
-const GameObject = @import("Game/GameObject.zig");
-const Shader = @import("Display/Shader.zig");
-const Texture = @import("Display/Texture.zig");
-const za = @import("zalgebra");
-
-const input = app.input;
+const input = ia.ia.input;
 
 const Allocator = std.mem.Allocator;
 
@@ -21,16 +11,16 @@ const window_height = 600;
 
 pub fn main() !void {
     // Initialize the application
-    app.init() catch |err| switch (err) {
+    ia.init() catch |err| switch (err) {
         error.AlreadyInit => unreachable,
         error.GLFWInit => {
-            std.log.err("Failed to init glfw app: {?s}", .{glfw.getErrorString()});
+            std.log.err("Failed to init glfw app: {?s}", .{ia.glfwErrorString()});
             std.process.exit(1);
         },
     };
-    defer app.deinit();
+    defer ia.deinit();
 
-    const allocator = app.allocator();
+    const allocator = ia.allocator();
 
     // now we want to get args
     const start_scene: usize = blk: {
@@ -47,15 +37,15 @@ pub fn main() !void {
     };
 
     // Create a window
-    const window = try app.createWindow("Main Window", window_width, window_height, null);
+    const window = try ia.createWindow("Main Window", window_width, window_height, null);
     window.contex.setAttrib(.resizable, false);
-    window.background_color = app.Color.colorF(0.2, 0.4, 0.5);
-    app.setVsync(true);
+    window.background_color = ia.Color.colorF(0.2, 0.4, 0.5);
+    ia.setVsync(true);
 
     // Initialize game
     // zig fmt: off
-    var game = try Game.init(window, Game.Camera.initDefault(za.Vec2.new(window_width, window_height)), &[_]Game.Scene{ 
-        try Game.Scene.fromFile(allocator, "Main", .{})
+    var game = try ia.Game.init(window, ia.Game.Camera.initDefault(ia.math.Vec2.new(window_width, window_height)), &[_]ia.Game.Scene{ 
+        try ia.Game.Scene.fromFile(allocator, "Main", .{})
     });
     defer game.deinit();
 
@@ -63,7 +53,7 @@ pub fn main() !void {
     game.mainCam.zoom = 3;
     game.current_scene_index = start_scene; // gonna start at start_scene
 
-    game.setEvents(@import("gameloop.zig"));
+    // game.setEvents(@import("gameloop.zig"));
 
     game.start() catch |err| {
         std.log.err("Failed to start game cause: {any}", .{err});

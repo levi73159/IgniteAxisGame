@@ -1,10 +1,5 @@
-const app = @import("../app.zig");
 const std = @import("std");
-const za = @import("zalgebra");
-const GameObject = @import("GameObject.zig");
-const Texture = @import("../Display/Texture.zig");
-const Renderer = @import("../Display/Renderer.zig");
-const input = @import("input.zig");
+const ia = @import("ignite-axis");
 
 const Self = @This();
 
@@ -12,7 +7,7 @@ speed: f32,
 jump_height: f32,
 gravity: f32,
 
-velocity: za.Vec2 = za.Vec2.zero(),
+velocity: ia.math.Vec2 = ia.math.Vec2.zero(),
 is_grounded: bool = false,
 is_jumping: bool = false,
 
