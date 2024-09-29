@@ -1,12 +1,5 @@
 const std = @import("std");
 
-const IgniteAxisVersion: std.SemanticVersion = .{
-    .build = "IgniteAxis",
-    .major = 1,
-    .minor = 0,
-    .patch = 0,
-};
-
 // Although this function looks imperative, note that its job is to
 // declaratively construct a build graph that will be executed by an external
 // runner.

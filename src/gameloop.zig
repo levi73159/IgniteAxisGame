@@ -1,34 +1,28 @@
-const za = @import("zalgebra");
-const app = @import("app.zig");
 const std = @import("std");
-const Game = @import("Game/Game.zig");
-const Texture = @import("Display/Texture.zig");
-
-const Player = @import("Game/Player.zig");
-
-const Scene = Game.Scene;
+const ia = @import("ignite-axis");
+const Player = @import("Player.zig");
 
 const gravity: f32 = 723.19;
 
 var player: Player = undefined; // should get loaded in at load
-var platforms: []Game.GameObject = undefined;
-var spikes: []Game.GameObject = undefined;
-var win_pole: ?Game.GameObject = null;
+var platforms: []ia.GameObject = undefined;
+var spikes: []ia.GameObject = undefined;
+var win_pole: ?ia.GameObject = null;
 
-pub fn onStart(game: *Game, _: f32) anyerror!void {
-    const player_texture = try Texture.init(app.allocator(), "res/Player.png");
-    player = try Player.initDefault(&game.window.renderer, za.Vec2.zero(), gravity, player_texture);
+pub fn onStart(game: *ia.Game, _: f32) anyerror!void {
+    const player_texture = try ia.Texture.init(ia.allocator(), "res/Player.png");
+    player = try Player.initDefault(&game.window.renderer, ia.math.Vec2.zero(), gravity, player_texture);
 }
 
-pub fn onExit(_: *Game, _: f32) anyerror!void {
-    player.game_object.texture.deinit(app.allocator());
+pub fn onExit(_: *ia.Game, _: f32) anyerror!void {
+    player.game_object.texture.deinit(ia.allocator());
 }
 
-pub fn onLoad(game: *Game, _: f32) anyerror!void {
-    const allocator = app.allocator();
+pub fn onLoad(game: *ia.Game, _: f32) anyerror!void {
+    const allocator = ia.allocator();
 
-    player.game_object.position().* = za.Vec2.zero();
-    player.velocity = za.Vec2.zero();
+    player.game_object.position().* = ia.math.Vec2.zero();
+    player.velocity = ia.math.Vec2.zero();
 
     game.mainCam.focus(player.game_object.position().*);
 
@@ -41,12 +35,12 @@ pub fn onLoad(game: *Game, _: f32) anyerror!void {
     }
 }
 
-pub fn onUnload(_: *Game, _: f32) anyerror!void {
-    app.allocator().free(platforms);
-    app.allocator().free(spikes);
+pub fn onUnload(_: *ia.Game, _: f32) anyerror!void {
+    ia.allocator().free(platforms);
+    ia.allocator().free(spikes);
 }
 
-pub fn onUpdate(game: *Game, dt: f32) anyerror!void {
+pub fn onUpdate(game: *ia.Game, dt: f32) anyerror!void {
     player.update(dt);
     player.collison(platforms, dt);
 

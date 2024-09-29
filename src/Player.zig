@@ -11,19 +11,19 @@ velocity: ia.math.Vec2 = ia.math.Vec2.zero(),
 is_grounded: bool = false,
 is_jumping: bool = false,
 
-game_object: GameObject, // the internal game object
+game_object: ia.GameObject, // the internal game object
 
-pub fn init(renderer: *Renderer, pos: za.Vec2, speed: f32, jump_height: f32, gravity: f32, texture: Texture) !Self {
+pub fn init(renderer: *ia.Display.Renderer, pos: ia.math.Vec2, speed: f32, jump_height: f32, gravity: f32, texture: ia.Texture) !Self {
     return Self{
         .speed = speed,
         .jump_height = jump_height,
         .gravity = gravity,
         // zig fmt: off
-        .game_object = try GameObject.initSquare(
+        .game_object = try ia.GameObject.initSquare(
             renderer, 
             pos, 
-            za.Vec2.new(@as(f32, @floatFromInt(texture.width)), @as(f32, @floatFromInt(texture.height))),
-            app.Color.white,
+            ia.math.Vec2.new(@as(f32, @floatFromInt(texture.width)), @as(f32, @floatFromInt(texture.height))),
+            ia.Color.white,
             texture,
             null
         ),
@@ -31,12 +31,12 @@ pub fn init(renderer: *Renderer, pos: za.Vec2, speed: f32, jump_height: f32, gra
     };
 }
 
-pub fn initDefault(renderer: *Renderer, pos: za.Vec2, gravity: f32, texture: Texture) !Self {
+pub fn initDefault(renderer: *ia.Display.Renderer, pos: ia.math.Vec2, gravity: f32, texture: ia.Texture) !Self {
     return init(renderer, pos, 200, 100, gravity, texture);
 }
 
 pub fn update(self: *Self, dt: f32) void {
-    const move_dir = input.getAxis(.a, .d) * self.speed;
+    const move_dir = ia.input.getAxis(.a, .d) * self.speed;
     self.velocity.xMut().* = move_dir;
     self.velocity.yMut().* += self.gravity * dt;
 
@@ -47,7 +47,7 @@ pub fn update(self: *Self, dt: f32) void {
     }
 
     // now make it set is_jumping when we release space
-    if (input.keyDown(.space)) {
+    if (ia.input.keyDown(.space)) {
         if (self.is_grounded and !self.is_jumping) {
             self.velocity.yMut().* = -std.math.sqrt(self.jump_height * 2.0 * self.gravity);
         }
@@ -56,10 +56,10 @@ pub fn update(self: *Self, dt: f32) void {
         self.is_jumping = false;
     }
 
-    self.game_object.position().* = self.game_object.position().add(self.velocity.mul(za.Vec2.new(dt, dt)));
+    self.game_object.position().* = self.game_object.position().add(self.velocity.mul(ia.math.Vec2.new(dt, dt)));
 }
 
-pub fn collison(self: *Self, obsticals: []const GameObject, dt: f32) void {
+pub fn collison(self: *Self, obsticals: []const ia.GameObject, dt: f32) void {
     self.is_grounded = false;
 
     // then check collison
@@ -90,4 +90,6 @@ pub fn collison(self: *Self, obsticals: []const GameObject, dt: f32) void {
     }
 }
 
-pub inline fn isColliding(self: Self, other: GameObject) bool { return self.game_object.isColliding(other); }
+pub inline fn isColliding(self: Self, other: ia.GameObject) bool {
+    return self.game_object.isColliding(other);
+}

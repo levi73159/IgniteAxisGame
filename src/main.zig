@@ -53,7 +53,7 @@ pub fn main() !void {
     game.mainCam.zoom = 3;
     game.current_scene_index = start_scene; // gonna start at start_scene
 
-    // game.setEvents(@import("gameloop.zig"));
+    game.setEvents(@import("gameloop.zig"));
 
     game.start() catch |err| {
         std.log.err("Failed to start game cause: {any}", .{err});
