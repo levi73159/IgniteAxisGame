@@ -1,7 +1,7 @@
 const std = @import("std");
 const ia = @import("ignite-axis");
 
-const input = ia.ia.input;
+const input = ia.input;
 
 const Allocator = std.mem.Allocator;
 
